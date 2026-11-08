@@ -47,7 +47,7 @@
     "DR":                    {"mean": 60,  "cv": 0.7, "source": "assumption (consultant arrival and assessment)"},
     "discharge_process":     {"mean": 15,  "cv": 0.6, "source": "assumption"},
     "boarding": {
-      "low":  {"mean": 180, "cv": 1.0, "source": "assumption informed by provincial median waits for an inpatient bed (Alberta 3.6 h, Ontario 7 h, 2022/23; CDA-AMC 2024)"},
+      "low":  {"mean": 180, "cv": 1.0, "source": "assumption informed by provincial median waits for an inpatient bed (Alberta 3.6 h, Ontario 7 h, 2022/23; Li2023_EDOvercrowdingCADTH)"},
       "high": {"mean": 480, "cv": 1.0, "source": "assumption informed by the same figures (upper level)"}
     }
   },
@@ -90,7 +90,7 @@
     "warmup_days": {"value": 2, "source": "MSER-5 on pilot runs at high load: largest truncation point 15 h (experiments/results/E0_pilot/warmup_mser5); 2 days leaves a margin"},
     "observation_days": {"value": 28, "source": "design"},
     "max_cooldown_days": {"value": 10, "source": "design: arrivals continue after the observation window until every observed patient has left"},
-    "replications": {"value": 25, "source": "CI half-width rule on 10 pilot replications: at most 23 needed for a 5% relative half-width of mean LOS in every core ED type (experiments/results/E0_pilot/replications_needed)"},
+    "replications": {"value": 25, "source": "CI half-width rule on 10 pilot replications: fewer than 25 needed for a 5% relative half-width of mean LOS in every core ED type (experiments/results/E0_pilot/replications_needed)"},
     "replications_secondary": {"value": 15, "source": "design: prediction-error sweep (E4), sensitivity runs (E5) and fidelity runs (E3); comparisons there are paired under common random numbers"},
     "base_seed": {"value": 20261107, "source": "design"}
   }

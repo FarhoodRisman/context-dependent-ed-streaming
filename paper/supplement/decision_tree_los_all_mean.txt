@@ -1,0 +1,19 @@
+|--- splitflow <= 0.50
+|   |--- load <= 0.50
+|   |   |--- acuity <= 1.50
+|   |   |   |--- class: FCFS
+|   |   |--- acuity >  1.50
+|   |   |   |--- class: FCFS
+|   |--- load >  0.50
+|   |   |--- acuity <= 1.50
+|   |   |   |--- class: SIM
+|   |   |--- acuity >  1.50
+|   |   |   |--- class: SIM
+|--- splitflow >  0.50
+|   |--- acuity <= 1.50
+|   |   |--- load <= 1.50
+|   |   |   |--- class: FCFS
+|   |   |--- load >  1.50
+|   |   |   |--- class: FCFS
+|   |--- acuity >  1.50
+|   |   |--- class: FCFS

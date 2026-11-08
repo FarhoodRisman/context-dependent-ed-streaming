@@ -1,0 +1,6 @@
+{
+  "_about": "Published aggregate values used only for the face-validity comparison (not for calibration of the policy results).",
+  "cihi_nonadmitted_less_urgent_p90_hours": {"value": 7.8, "source": "CIHI2026_NACRS: 2025-2026, 9 in 10 visits of patients discharged home after less urgent visits", "unit": "hours"},
+  "cihi_admitted_p90_hours": {"value": 46.5, "source": "CIHI2026_NACRS: 2025-2026, 9 in 10 visits of admitted patients ended within", "unit": "hours"},
+  "provincial_median_wait_inpatient_bed_hours": {"value": [3.6, 7.0], "source": "Alberta and Ontario 2022-2023 medians (Li2023_EDOvercrowdingCADTH, CADTH, Nov. 2023); informs the boarding levels", "unit": "hours"}
+}

@@ -1,0 +1,46 @@
+\section{Managerial Implications}
+\label{sec:implications}
+
+The results suggest five practical points for ED and health system managers.
+
+\emph{Do not copy the common default without checking the fit.} CTAS ordering with a CTAS-based fast track was the best policy in at most \DefaultIsBestRatp{} of \NEdTypes{} ED types and fell more than 10\% short of the best RATP in \DefaultRatpNGtTen{} of them. Its shortfall is largest in fast-track EDs, where the acuity cut-off leaves second-area capacity idle while Main-area patients wait.
+
+\emph{Decide the routing rule together with the capacity split.} In two-area EDs the routing rule had at least as much effect as the queue rule. A routing rule that sends more simple patients to the second area used that area's capacity better, whereas a plausible prediction-based rule overloaded the Main area when capacity was divided by acuity. Before introducing streaming, a manager should check that the expected flow into each area matches its staff and spaces.
+
+\emph{Choose the objective before choosing the policy.} For any one measure, a single policy came close to the best in nearly all ED types, so standardization across a health system can cost little. But the policy that achieves this differs between timely access for urgent patients, overall flow, average lateness and the longest waits of low-acuity patients. Standardizing on a policy is in effect a choice of which objective to favour, and it should be made explicitly. Where long waits of low-acuity patients are a concern, an ageing term or an explicit maximum-wait rule should accompany any acuity-based order.
+
+\emph{Use the guide as a starting point.} Table~\ref{tab:guide} recommends a policy by acuity mix and configuration. Within each row the recommended policy stays within a few percent of the best at every load level, so the recommendation does not need to change with daily load. The guide is derived from synthetic EDs; a site should confirm it with a model calibrated to its own data, which the released code supports.
+
+\emph{Check that a scoring rule does what it is meant to do.} When a policy is implemented as a weighted score, the weights decide the policy. Propositions~\ref{prop:linear}--\ref{prop:route} give simple conditions that can be checked before deployment, and the decision-level comparison of Section~\ref{sec:results} can be run on the scoring rule's own decision log. Outcome measures alone are not enough: the SIM rule produced almost the same average outcomes as CTAS-SPT while choosing a different patient at about half of all decisions, including decisions in which a less urgent patient was seen first.
+
+\section{Limitations and Future Research}
+\label{sec:limitations}
+
+The ED types are synthetic. Case-mix and admission parameters come from published Canadian aggregates and the pathway mix from one academic ED in Seoul \cite{Rismanchian2023_PatientJourney}; combining the two assumes that pathway frequencies conditional on disposition transfer across settings, which needs to be checked with local data before the results are applied to a specific ED. Activity durations, the diagnostic tilt by CTAS level and the prediction accuracies are assumptions, stated in the configuration files with their rationale; the sensitivity analysis varies only boarding and diagnostic intensity.
+
+The validation is limited to face validity. The generator and engine reproduce the intended pathway and transition frequencies, and the high load level reaches tail values of the order of national Canadian figures, but the medium load level is less crowded at the median than the average Canadian ED, and boarding times in the core design are shorter than national values. The study compares policies within ED types; absolute waiting times should not be read as forecasts for any particular ED.
+
+Several features of real EDs are not modelled: patients who leave without being seen, nurses other than triage nurses, physician hand-overs and continuity of care, flexible staffing within a shift, and time-varying boarding. Leaving without being seen would reduce the measured waits of low-acuity patients under rules that make them wait longest, and would therefore narrow some differences between policies. Prediction errors are drawn independently for each attribute, whereas errors of a real model are correlated; correlated errors could make prediction-based routing more or less harmful than shown here.
+
+The policy set is limited to static queue rules with optional ageing and three routing rules. In particular, we did not test a routing rule that uses triage information only but sends a larger share of patients to the second area, for example by CTAS level and presenting complaint; since most of the gain of similarity routing came from how many patients it sends rather than from prediction accuracy, such a rule might capture part of that gain without predictions. Dynamic rules that react to congestion, flexible area boundaries \cite{laker2014flex_track} and optimized weights are natural extensions; the framework and the fidelity conditions apply to them directly. Finally, the regret analysis treats each ED type as equally important. A health system with a known mix of ED types could weight the regret by volume or by clinical risk, and the published results files allow such reweighting without re-running the simulation.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This study compared patient streaming policies across \NEdTypes{} synthetic ED types that differ in acuity mix, load and configuration. The best policy differed across ED types, mainly with the acuity mix and the configuration, and the common default of CTAS ordering with a CTAS-based fast track was often far from the best. For any one performance measure, a well-chosen single policy came close to the best in nearly all ED types, but which policy that was depended on the measure. In two-area EDs the routing rule mattered at least as much as the queue order, and a routing rule had to match the split of capacity between areas. Similarity-based scoring rules reproduced classical rules exactly when the stated weight conditions held; when they did not, average outcomes could look equivalent while individual decisions differed at about half of all dispatches. Taken together, the results say that a streaming policy should be chosen for a particular ED type and a stated objective, and that its implementation should be checked at the level of decisions, not only outcomes.
+
+\section*{Data and Code Availability}
+\label{sec:availability}
+
+No patient-level data were used. All inputs are published aggregates or stated assumptions, recorded with their sources in the configuration files. The simulation package, tests, experiment scripts, raw results and the script that generates every table, figure and number in this paper are available in a public repository (link withheld for review). The STRESS-DES checklist is provided as supplementary material.
+
+\appendix[Best Policy by ED Type]
+
+\begin{table*}[!t]
+\centering
+\caption{Default policy and best policy by ED type (\Reps{} replications). Tied: number of policies whose paired difference from the best is not significant at the 95\% level, out of all policies for the configuration.}
+\label{tab:best}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_best}\end{adjustbox}
+\end{table*}

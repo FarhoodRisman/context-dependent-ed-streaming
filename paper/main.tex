@@ -1,20 +1,6 @@
+% Camera-ready style (two columns, with authors). The review version for submission is main_review.tex.
 \documentclass[lettersize,journal]{IEEEtran}
-\usepackage{amsmath,amsfonts,amssymb}
-\usepackage{amsthm}
-\usepackage{algorithm}
-\usepackage{algorithmic}
-\usepackage{array}
-\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
-\usepackage{textcomp}
-\usepackage{stfloats}
-\usepackage{url}
-\usepackage{graphicx}
-\usepackage{booktabs,multirow}
-\usepackage[numbers]{natbib}
-\usepackage{xcolor}
-\usepackage[colorlinks,allcolors=blue]{hyperref}
-\newtheorem{proposition}{Proposition}
-\hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
+\input{preamble}
 
 \begin{document}
 
@@ -28,44 +14,11 @@
 
 \maketitle
 
-\begin{abstract}
-To be written.
-\end{abstract}
+\input{sections/abstract}
 
-\begin{IEEEkeywords}
-Emergency department, patient streaming, prioritization, discrete-event simulation, policy fit, healthcare operations management.
-\end{IEEEkeywords}
+\input{sections/body}
 
-% Section plan follows notes/PROJECT_BRIEF.md
-\section{Introduction}
-\IEEEPARstart{E}{mergency} departments differ in the patients they serve and in how they are organized.
-% Motivation: one-size-fits-all streaming policies; research questions; contributions.
-
-\section{Literature Review}
-% ED streaming and prioritization rules; APQ; prediction-based dispatching; policy comparisons across ED types; ED performance indicators.
-
-\section{Simulation Framework}
-\subsection{Patient Generator and ED Types}
-% Synthetic patients; true vs predicted attributes; pathway sampling based on \citet{Rismanchian2023_PatientJourney}.
-\subsection{Process Model and Resources}
-\subsection{Streaming Policies}
-% Queue disciplines and bed-assignment rules; similarity-based representation.
-\subsection{Policy Fidelity of the Similarity Representation}
-% Propositions + decision-level and outcome-level fidelity tests.
-
-\section{Experimental Design}
-% Factors and levels; KPIs; warm-up, run length, replications, CRN; verification and validation (STRESS-DES).
-
-\section{Results}
-% Best policy by ED type; regret of one-size-fits-all; trade-offs; value of prediction accuracy.
-
-\section{Managerial Implications}
-
-\section{Limitations and Future Research}
-
-\section{Conclusion}
-
-\bibliographystyle{IEEEtranN}
+\bibliographystyle{\ifdefined\localbst unsrtnat\else IEEEtranN\fi}
 \bibliography{ed_library}
 
 \end{document}

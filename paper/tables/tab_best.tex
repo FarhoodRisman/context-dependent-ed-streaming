@@ -1,0 +1,43 @@
+\begin{tabular}{lllrlrr lrr}
+\toprule
+ & & & \multicolumn{4}{c}{RATP} & \multicolumn{3}{c}{Mean LOS (min)} \\
+\cmidrule(lr){4-7}\cmidrule(lr){8-10}
+Acuity & Load & Config. & Default & Best policy & Best & Tied & Best policy & Best & Default \\
+\midrule
+Tertiary & low & Pooled & 0.38 & SIM & 0.36 & 1/7 & FCFS & 154 & 155 \\
+ &  & Fast track & 0.44 & SIM/S & 0.38 & 5/21 & FCFS/S & 154 & 155 \\
+ &  & Split flow & 0.37 & SIM/S & 0.35 & 2/21 & FCFS/C & 154 & 155 \\
+\addlinespace[1pt]
+ & medium & Pooled & 0.60 & SIM & 0.53 & 1/7 & SIM & 166 & 168 \\
+ &  & Fast track & 0.64 & SIM/S & 0.50 & 1/21 & FCFS/S & 162 & 168 \\
+ &  & Split flow & 0.58 & SIM/S & 0.50 & 1/21 & FCFS/S & 165 & 167 \\
+\addlinespace[1pt]
+ & high & Pooled & 1.09 & SIM & 0.89 & 1/7 & SIM & 204 & 229 \\
+ &  & Fast track & 1.02 & SIM/S & 0.76 & 1/21 & SIM/S & 179 & 203 \\
+ &  & Split flow & 0.96 & SIM/S & 0.80 & 2/21 & SIM-AGE/S & 193 & 206 \\
+\addlinespace[1pt]
+Community & low & Pooled & 0.38 & CTAS-PD & 0.37 & 5/7 & FCFS & 138 & 138 \\
+ &  & Fast track & 0.55 & SIM/S & 0.47 & 1/21 & SIM/C & 143 & 144 \\
+ &  & Split flow & 0.37 & CTAS-SPT/S & 0.36 & 3/21 & FCFS/S & 138 & 138 \\
+\addlinespace[1pt]
+ & medium & Pooled & 0.60 & SIM & 0.56 & 1/7 & SIM & 151 & 155 \\
+ &  & Fast track & 0.83 & SIM/S & 0.65 & 1/21 & SIM/C & 157 & 159 \\
+ &  & Split flow & 0.59 & CTAS-SPT/S & 0.53 & 3/21 & SIM/S & 150 & 154 \\
+\addlinespace[1pt]
+ & high & Pooled & 1.05 & SIM & 0.92 & 1/7 & SIM & 195 & 213 \\
+ &  & Fast track & 1.31 & SIM/S & 1.07 & 1/21 & SIM/S & 199 & 212 \\
+ &  & Split flow & 0.96 & CTAS-SPT/S & 0.84 & 3/21 & FCFS/S & 187 & 202 \\
+\addlinespace[1pt]
+Urgent-care-like & low & Pooled & 0.30 & CTAS & 0.30 & 3/7 & SIM & 119 & 120 \\
+ &  & Fast track & 0.77 & SIM/S & 0.53 & 5/21 & FCFS/S & 126 & 128 \\
+ &  & Split flow & 0.41 & CTAS/S & 0.37 & 5/21 & SIM/S & 120 & 120 \\
+\addlinespace[1pt]
+ & medium & Pooled & 0.57 & CTAS-SPT & 0.55 & 4/7 & SIM & 130 & 135 \\
+ &  & Fast track & 1.15 & SIM/S & 0.83 & 2/21 & SIM/S & 140 & 149 \\
+ &  & Split flow & 0.68 & CTAS/S & 0.63 & 4/21 & FCFS/S & 131 & 134 \\
+\addlinespace[1pt]
+ & high & Pooled & 0.92 & CTAS-SPT & 0.87 & 3/7 & SIM & 165 & 192 \\
+ &  & Fast track & 1.55 & CTAS-SPT/S & 1.28 & 4/21 & SIM/S & 189 & 223 \\
+ &  & Split flow & 1.00 & CTAS-SPT/C & 0.93 & 5/21 & FCFS/S & 163 & 172 \\
+\bottomrule
+\end{tabular}

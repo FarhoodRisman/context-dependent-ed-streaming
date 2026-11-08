@@ -1,0 +1,13 @@
+|--- acuity <= 1.50
+|   |--- fasttrack <= 0.50
+|   |   |--- acuity <= 0.50
+|   |   |   |--- class: CTAS
+|   |   |--- acuity >  0.50
+|   |   |   |--- class: CTAS-SPT
+|   |--- fasttrack >  0.50
+|   |   |--- load <= 1.50
+|   |   |   |--- class: SIM
+|   |   |--- load >  1.50
+|   |   |   |--- class: CTAS-SPT
+|--- acuity >  1.50
+|   |--- class: SIM

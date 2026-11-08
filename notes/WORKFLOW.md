@@ -1,5 +1,7 @@
 # Workflow and to-do list
 
+> **Status 2026-11-08:** Phases 0-7 were run straight through to a first complete draft (see DECISIONS.md, 2026-11-08). Gates 1, 2, 4, 6 and 7 still need co-author review; GitHub repository and TEM submission (Phase 8) are pending.
+
 Phases run in order. Each phase ends with a **gate**: a check that must pass before the next phase starts. Tick items as they are done, and log decisions in `DECISIONS.md`.
 
 ---

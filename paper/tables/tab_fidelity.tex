@@ -1,0 +1,13 @@
+\begin{tabular}{llrrrrr}
+\toprule
+Similarity setting & Reference rule & Prop. & Agreement (\%) & Kendall $\tau$ & Identical logs (\%) & $\Delta$ mean LOS (\%) \\
+\midrule
+$w=(1,0,\dots)$ & CTAS & 2 (holds) & 100.0 & 1.00 & 100 & $0$ \\
+$w_A=0.85, w_B=0.15$ & CTAS-SPT & 2 (holds) & 100.0 & 1.00 & 100 & $0$ \\
+$w_A=0.85, w_C=0.15$ & CTAS-PD & 2 (holds) & 100.0 & 1.00 & 100 & $0$ \\
+routing, $w=(1,0,\dots)$ & CTAS streaming & 3 (holds) & 100.0 & -- & 100 & $0$ \\
+$w_A=w_B=0.25$ & CTAS-SPT & 2 (fails) & 78.0 & 0.80 & 0 & -0.7 $\pm$ 0.1 \\
+SIM weights & CTAS-SPT & 2 (fails) & 53.2 & 0.39 & 0 & -0.2 $\pm$ 0.2 \\
+similarity routing & prediction streaming & 3 (fails) & 70.4 & -- & 0 & -39.2 $\pm$ 12.8 \\
+\bottomrule
+\end{tabular}

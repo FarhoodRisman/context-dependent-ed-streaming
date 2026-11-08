@@ -1,0 +1,38 @@
+\section{Experimental Design}
+\label{sec:design}
+
+\subsection{Performance Measures}
+
+All measures are computed from the patient-level event log, which records for every patient and activity the time of request, start and end. Time stamps follow the ED Benchmarking Alliance definitions \cite{ED-Metrics_WELCH2013}, and the set of measures follows the time-interval and access measures most often recommended for ED performance \cite{Sorup2013_EDPerformance}. Door-to-physician time runs from arrival to the start of the physician initial assessment; LOS runs from arrival to departure and is reported separately for discharged and admitted patients; boarding time runs from the disposition decision to departure. We report means, medians, 90th and 95th percentiles, overall and by CTAS level. Aggregate values are computed from patient records, never from other reported values.
+
+Target compliance is measured against the CTAS response-time objectives for physician assessment \cite{Bullard2017_CTAS}: 15, 15, 30, 60 and 120 minutes for CTAS~1--5 (the CTAS~1 objective is immediate; a 15-minute threshold is used so that the measure is informative). For CTAS level $l$, $\text{PTP}_l$ is the share of patients whose door-to-physician time exceeds the target. Two acuity-weighted summaries are used:
+\begin{align}
+\text{RATP} &= \sum_{l=1}^{5}\frac{1}{l}\,\text{PTP}_l, \\
+\text{AWT} &= \sum_{l=1}^{5}\frac{1}{l}\,\mathbb{E}_l\!\left[(W-T_l)^+\right],
+\end{align}
+where $W$ is door-to-physician time and $T_l$ the target. RATP weights the share of late patients and AWT the average lateness in minutes. The two can disagree: a policy may reduce the number of late patients while increasing the lateness of those who remain late. RATP and mean LOS are the two primary measures: RATP reflects timely access weighted by acuity, mean LOS reflects overall flow. AWT and the 90th percentile of door-to-physician time are reported as secondary measures.
+
+\subsection{Experiments}
+
+\begin{itemize}
+\item \textbf{E1, verification and validation}: transition frequencies recovered from the event log of the community, medium-load, pooled ED, compared with the generator and with the published pathway table; time intervals at the three load levels compared with published Canadian aggregates.
+\item \textbf{E2, main experiment}: all \NEdTypes{} core ED types, all policies, reference prediction accuracy ($\alpha=1$), \Reps{} replications.
+\item \textbf{E3, fidelity}: the exact similarity representations of Section~\ref{sec:propositions}, two settings that violate (\ref{eq:lexcond}) (SIM, and equal weights $w_A=w_B=\NearW$), and two routing pairs, each run beside its reference rule on the same patients in the three medium-load fast-track EDs, \RepsSecondary{} replications.
+\item \textbf{E4, value of prediction accuracy}: the nine medium-load ED types; every policy that uses predictions is run at $\alpha\in\{0,\AlphaStep,\dots,\AlphaMax\}$; \RepsSecondary{} replications.
+\item \textbf{E5, sensitivity}: the nine medium-load ED types with high boarding, light diagnostics or heavy diagnostics (one at a time, capacities unchanged), all policies, \RepsSecondary{} replications.
+\end{itemize}
+
+In E3 the engine runs the similarity rule and, at every dispatch from a queue with at least two waiting patients, records whether the reference rule would have chosen the same patient. At every fifth such dispatch with at least three waiting patients it also computes Kendall's $\tau$ between the two orderings of the whole queue. The reference rule is then run separately on the same patient list, and the two event logs and KPIs are compared.
+
+\subsection{Run Control and Statistical Analysis}
+
+Each run covers a warm-up of \WarmupDays{} days, an observation window of \ObsDays{} days and a cool-down in which arrivals continue until every patient who arrived in the observation window has left, so no patient is cut off at the end of a run. The warm-up was chosen with MSER-5 \cite{Hoad2010_WarmUp} on pilot runs at the high load level, where the largest truncation point was \MserMaxHours{} hours. The number of replications was set with a confidence-interval half-width rule on ten pilot replications per ED type: at most \RepsNeededLosMax{} replications were needed for a 95\% half-width of 5\% of mean LOS, and we use \Reps. Within an ED type and replication all policies run on the same patient list, so policy differences are estimated as paired differences across replications with $t$-based 95\% confidence intervals. For each ED type and measure we report the best policy (lowest mean) and the number of policies whose paired difference from the best has a confidence interval that includes zero (``tied with the best'').
+
+The \emph{regret} of policy $\pi$ in ED type $e$ for a measure $K$ (lower is better) is
+\begin{equation}
+\text{regret}(\pi,e)=\frac{K(\pi,e)}{\min_{\pi'}K(\pi',e)}-1.
+\end{equation} A one-size-fits-all policy is a single queue rule and routing rule used in every ED type (the routing rule is ignored in pooled EDs). For each measure we identify the single policy with the smallest mean regret over the \NEdTypes{} ED types and compare it with the default policy CTAS/C.
+
+\subsection{Verification, Reproducibility and Reporting}
+
+The model is implemented in one Python package. A test suite checks each queue rule on small deterministic cases, the propositions by exhaustive enumeration, every KPI function against a hand-computed example, patient conservation, the order of time stamps, that no resource exceeds its capacity, and that the same policy and seed give identical results. Before any table or figure is built, automated checks confirm that every observed patient departed, that rates and utilizations lie in $[0,1]$, that every overall mean lies within the range of its group means, and that runs shared between experiments (for example, $\alpha=1$ in E4 and E2) give identical numbers. One script then builds every table, figure and number quoted in the results from the raw output files, together with a provenance record of the code version, configuration, seeds and run settings. The study is reported following the STRESS guidelines for discrete-event simulation \cite{Monks2019_STRESS}; the checklist is provided as supplementary material.

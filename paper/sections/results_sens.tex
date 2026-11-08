@@ -1,0 +1,14 @@
+\subsection{Sensitivity to Boarding and Diagnostic Intensity}
+
+Table~\ref{tab:sens} reports, for the nine medium-load ED types, whether the best policy of the core design remains the best when boarding is longer or diagnostic intensity changes (capacities unchanged), and how much the core recommendation loses if it is kept. With light diagnostics the core recommendation loses at most \SensLightDiagnosticsRatpRegretMax\% in RATP and \SensLightDiagnosticsLosAllMeanRegretMax\% in mean LOS. With high boarding the best policy for RATP changes in some ED types, but keeping the core recommendation costs on average \SensHighBoardingRatpRegret\% in RATP (at most \SensHighBoardingRatpRegretMax\%) and \SensHighBoardingLosAllMeanRegret\% in mean LOS (at most \SensHighBoardingLosAllMeanRegretMax\%); the best queue rules remain \SensHighBoardingBestQueues. Long boarding hits split flow hardest, because admitted patients from the vertical area board in Main beds: in \SensHighBoardingNearSat{} ED types (\SensHighBoardingNearSatList) the median Main-space utilization across policies reached 0.95 or more.
+
+Heavy diagnostics is the most demanding variant. In \SensHeavyDiagnosticsNearSat{} ED types (\SensHeavyDiagnosticsNearSatList) the median Main-space utilization across policies was 0.95 or more (up to \SensHeavyDiagnosticsUtilMax), because capacities were sized for typical diagnostic use. Close to saturation small differences in flow have large effects, the ranking of policies becomes unstable, and the core recommendation lost up to \SensHeavyDiagnosticsLosAllMeanRegretMax\% in mean LOS. Outside these near-saturated cases the core recommendations held up. The practical reading is that a policy recommendation is robust to moderate changes in demand but should be revisited when an ED operates close to the capacity of its Main area.
+
+\begin{table}[!t]
+\centering
+\caption{Sensitivity (nine medium-load ED types, \RepsSecondary{} replications): number of ED types in which the core best policy is still best, and mean (maximum) regret of keeping the core best policy.}
+\label{tab:sens}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_sensitivity}\end{adjustbox}
+\end{table}

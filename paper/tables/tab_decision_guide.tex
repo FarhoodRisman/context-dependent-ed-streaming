@@ -1,0 +1,17 @@
+\begin{tabular}{llrlrlr}
+\toprule
+ & & \multicolumn{2}{c}{Access (RATP)} & \multicolumn{2}{c}{Flow (mean LOS)} & \multicolumn{1}{c}{Balanced} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-7}
+Acuity mix & Configuration & Policy & Max regret (\%) & Policy & Max regret (\%) & Policy (max regret, \%) \\
+\midrule
+Tertiary & Pooled & SIM & 0.0 & SIM & 0.0 & SIM (0.0) \\
+ & Fast track & SIM/S & 0.0 & SIM/S & 0.1 & SIM/S (0.0) \\
+ & Split flow & SIM/S & 0.0 & SIM/S & 0.1 & SIM/S (0.0) \\
+Community & Pooled & SIM & 0.5 & SIM & 0.0 & SIM (0.3) \\
+ & Fast track & SIM/S & 0.0 & SIM/C & 1.2 & SIM/S (1.8) \\
+ & Split flow & CTAS-SPT/S & 0.0 & FCFS/S & 0.3 & CTAS-SPT/S (1.3) \\
+Urgent-care-like & Pooled & CTAS-SPT & 1.9 & SIM & 0.0 & CTAS-SPT (4.5) \\
+ & Fast track & SIM/S & 1.2 & SIM/S & 0.1 & SIM/S (0.6) \\
+ & Split flow & CTAS/S & 2.5 & FCFS/S & 0.0 & CTAS/S (2.4) \\
+\bottomrule
+\end{tabular}

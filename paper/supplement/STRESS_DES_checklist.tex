@@ -1,0 +1,60 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[colorlinks,allcolors=blue]{hyperref}
+\setlength{\parindent}{0pt}
+\input{../numbers}
+
+\title{Supplementary Material:\\STRESS-DES Reporting Checklist}
+\author{``One Policy Does Not Fit All: Matching Patient Streaming Policies\\to Emergency Department Types''}
+\date{}
+
+\begin{document}
+\maketitle
+
+This checklist follows the STRESS guidelines for discrete-event simulation (Monks et al., 2019, \textit{Journal of Simulation} 13(1):55--67). Section numbers refer to the main manuscript; ``Spec.'' refers to \texttt{notes/MODEL\_SPEC.md} and ``Config.'' to \texttt{sim/configs/*.json} in the code repository.
+
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.05\textwidth} p{0.30\textwidth} p{0.58\textwidth}@{}}
+\toprule
+\textbf{\#} & \textbf{STRESS-DES item} & \textbf{How addressed} \\
+\midrule
+\endhead
+\multicolumn{3}{@{}l}{\textbf{1. Objectives}}\\
+1.1 & Purpose of the model & Compare patient-streaming policies (queue rule and routing rule) across ED types defined by acuity mix, load and configuration; measure the regret of one-size-fits-all policies; measure the value of prediction accuracy; test whether similarity-based rules apply the policies they represent (Sec.~I). \\
+1.2 & Model outputs & Door-to-triage, time to treatment space, door-to-physician time, LOS (discharged, admitted), boarding time; percentiles by CTAS level; PTP by CTAS level, RATP, AWT; throughput; utilization of every resource; waits at every stage (Sec.~IV-A). \\
+1.3 & Experimentation aims & E1 verification and validation; E2 \NEdTypes{} ED types $\times$ all policies; E3 fidelity; E4 prediction-error sweep; E5 sensitivity to boarding and diagnostic intensity (Sec.~IV-B). \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{2. Logic}}\\
+2.1 & Base model overview & Fig.~1: arrival, triage, registration, routing, treatment space, physician initial assessment, pathway steps, reassessment, decision, discharge or boarding (Sec.~III-B). \\
+2.2 & Base model logic & Whole pathways sampled per patient; spaces held for the whole stay in Main and fast-track areas, only during physician encounters in the vertical area; non-preemptive service; CTAS~1 first at every queue; explicit first-come-first-served tie-breaking (Sec.~III-B, III-E; Spec.~4--5). \\
+2.3 & Components & Entities: patients. Resources: triage nurses, treatment spaces by area, physicians by pool and shift, laboratory, X-ray, CT, consultants. Queues: one per resource, ordered by the queue rule; per-area space queues (Spec.~4). \\
+2.4 & Scenario logic & \NQueueRules{} queue rules $\times$ three routing rules; three configurations; prediction error level $\alpha$ (Sec.~III-E, IV-B). \\
+2.5 & Algorithms & Weighted Offodile similarity; lexicographic and routing conditions (Propositions 1--3); accumulating priority (Sec.~III-F). \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{3. Data}}\\
+3.1 & Data sources & Published aggregates only: CTAS distributions and admission proportions (Holroyd et al., 2016); pathway frequencies (Rismanchian et al., 2023); CTAS targets (Bullard et al., 2017); national ED time intervals for face validity (CIHI, 2026). No patient-level data. \\
+3.2 & Pre-processing & None; the pathway table is renormalized over the \NPathways{} published pathways (Spec.~3). \\
+3.3 & Input parameters & All inputs with sources in Config.; durations lognormal with stated mean and CV; capacities derived by a fixed sizing rule (Sec.~III-C, Table~II). \\
+3.4 & Assumptions & Listed in Spec.~9 and Sec.~VII: durations, prediction accuracies, boarding levels, three equal shifts, registration as a delay, independent prediction errors, no patients leaving without being seen. \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{4. Experimentation}}\\
+4.1 & Initialization & Empty start; warm-up of \WarmupDays{} days chosen by MSER-5 (largest truncation point \MserMaxHours{} hours at high load); cool-down until every observed patient departs (Sec.~IV-C). \\
+4.2 & Run length / replications & Observation window \ObsDays{} days; \Reps{} replications (E2) and \RepsSecondary{} (E3--E5), from a 5\% CI half-width rule on mean LOS (Sec.~IV-C). \\
+4.3 & Estimation approach & Means over replications; paired differences with $t$-based 95\% confidence intervals under common random numbers (Sec.~IV-C). \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{5. Implementation}}\\
+5.1 & Software / language & Python 3 (NumPy, pandas, SciPy, scikit-learn, Matplotlib); custom event-driven engine (\texttt{sim/src/edsim}). \\
+5.2 & Random sampling & NumPy SeedSequence streams keyed by base seed, factor levels and replication; separate streams for arrivals, attributes and predictions; one uniform draw per patient and attribute shared by all $\alpha$. \\
+5.3 & Model execution & Batch execution by \texttt{experiments/run\_all.sh}; independent runs in parallel processes; results written with provenance records. \\
+5.4 & System specification & Standard two-core Linux machine; one run of 28 observation days takes well under a second. \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{6. Code access}}\\
+6.1 & Code availability & Full code, configuration, tests, raw results and the scripts that build every table, figure and quoted number are released in a public repository (anonymized for review). \\
+\bottomrule
+\end{longtable}
+
+\end{document}

@@ -174,42 +174,54 @@ def build_ed_type(acuity: str, load: str, config: str, boarding: str = "low",
     rho_med = v(cs["physician_target_utilisation_medium"])
 
     wl = expected_workloads(acuity, core["diagnostics"], core["boarding"])
+    # the two patient streams used for sizing: CTAS 1-3 (main) and CTAS 4-5 (second area)
+    wl_hi = expected_workloads(acuity, core["diagnostics"], core["boarding"], ctas_subset=(1, 2, 3))
     wl_low = expected_workloads(acuity, core["diagnostics"], core["boarding"], ctas_subset=(4, 5))
 
-    # physicians per shift, sized at the base arrival rate
-    phys = []
+    # physicians per shift, sized stream by stream at the base arrival rate; every
+    # configuration gets the same total (the pooled configuration pools the two)
+    phys, phys_low = [], []
     shift_rates = []
     for i, h0 in enumerate(shifts):
         h1 = shifts[i + 1] if i + 1 < len(shifts) else 24
         lam = base_rate / MIN_PER_DAY * prof[h0:h1].mean()      # patients per minute
         shift_rates.append((lam, h1 - h0))
-        phys.append(int(math.ceil(lam * wl["physician"] / rho_med)))
+        c_hi = max(1, int(math.ceil(lam * wl_hi["physician"] / rho_med)))
+        c_lo = max(1, int(math.ceil(lam * wl_low["physician"] / rho_med)))
+        phys.append(c_hi + c_lo)
+        phys_low.append(c_lo)
     offered = sum(l * wl["physician"] * hrs for l, hrs in shift_rates)
     capacity = sum(c * hrs for c, (_, hrs) in zip(phys, shift_rates))
     rho0 = offered / capacity
     rate_medium = base_rate * rho_med / rho0
 
-    # treatment spaces and diagnostics sized at the medium arrival rate
+    # treatment spaces (stream by stream) and diagnostics, sized at the medium arrival rate
     lam_med = rate_medium / MIN_PER_DAY
-    n_space = int(math.ceil(lam_med * wl["space"] / v(cs["space_sizing_utilisation"])))
+    ss = v(cs["space_sizing_utilisation"])
+    n_hi = max(1, int(math.ceil(lam_med * wl_hi["space"] / ss)))
+    n_lo = max(1, int(math.ceil(lam_med * wl_low["space"] / ss)))
+    n_space = n_hi + n_lo
     diag_cap = {s: max(1, int(math.ceil(lam_med * wl[s] / v(cs["diagnostic_target_utilisation"]))))
                 for s in DIAG_STAGES}
 
-    # second area (FASTTRACK / SPLITFLOW): share of CTAS 4-5 space load
-    share_space = wl_low["space"] / wl["space"]
-    share_phys = wl_low["physician"] / wl["physician"]
     n_second, phys_second = 0, []
     if config != "POOLED":
-        n_second = min(n_space - 1, max(1, int(round(n_space * share_space))))
+        n_second = n_lo
         if config == "FASTTRACK":
-            phys_second = [min(c - 1, max(1, int(round(c * share_phys)))) for c in phys]
+            phys_second = list(phys_low)
 
-    # actual load level
+    # actual load level: the arrival rate is scaled so that the busiest physician pool
+    # (under the reference CTAS 4-5 split for FASTTRACK) has the target offered load
     target = v(P["load_levels"])[load]
-    rate = rate_medium * target / rho_med
-    exp_wl = expected_workloads(acuity, diagnostics, boarding)
-    offered_load = sum(rate / MIN_PER_DAY * l / (base_rate / MIN_PER_DAY) * exp_wl["physician"] * hrs
-                       for l, hrs in shift_rates) / capacity
+    if config == "FASTTRACK":
+        cap_lo = sum(c * hrs for c, (_, hrs) in zip(phys_low, shift_rates))
+        rho_hi = sum(l * wl_hi["physician"] * hrs for l, hrs in shift_rates) / (capacity - cap_lo)
+        rho_lo = sum(l * wl_low["physician"] * hrs for l, hrs in shift_rates) / cap_lo
+        rho_cfg = max(rho_hi, rho_lo)
+    else:
+        rho_cfg = rho0
+    rate = base_rate * target / rho_cfg
+    offered_load = target
 
     # triage nurses: peak hour at the high load level
     rate_high = rate_medium * v(P["load_levels"])["high"] / rho_med

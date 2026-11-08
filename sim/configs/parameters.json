@@ -3,7 +3,7 @@
   "time_unit": "minutes",
 
   "arrivals": {
-    "base_visits_per_day": {"value": 150, "source": "assumption: mid-sized urban ED (about 55,000 visits per year)"},
+    "base_visits_per_day": {"value": 220, "source": "assumption: large urban ED (about 80,000 visits per year); chosen so that physician teams per shift are large enough for stable dedicated sub-pools at high load (DECISIONS.md, 2026-11-08)"},
     "hourly_profile": {
       "value": [0.65, 0.55, 0.45, 0.40, 0.38, 0.40, 0.50, 0.70, 0.95, 1.20, 1.35, 1.40, 1.40, 1.35, 1.30, 1.25, 1.25, 1.25, 1.25, 1.20, 1.15, 1.05, 0.95, 0.80],
       "source": "assumption: typical diurnal ED arrival shape (night trough, late-morning peak); normalised to mean 1 in code"
@@ -63,7 +63,7 @@
 
   "load_levels": {
     "value": {"low": 0.70, "medium": 0.80, "high": 0.90},
-    "source": "design: average physician offered load; reached by scaling the arrival rate"
+    "source": "design: offered load of the busiest physician pool (whole ED for POOLED and SPLITFLOW; the busier of Main and fast track under CTAS 4-5 streaming for FASTTRACK); reached by scaling the arrival rate"
   },
 
   "ctas_targets_minutes": {
@@ -87,10 +87,11 @@
   },
 
   "run_control": {
-    "warmup_days": {"value": 3, "source": "MSER-5 on pilot runs (experiments/results/E0_pilot); see DECISIONS.md"},
+    "warmup_days": {"value": 2, "source": "MSER-5 on pilot runs at high load: largest truncation point 15 h (experiments/results/E0_pilot/warmup_mser5); 2 days leaves a margin"},
     "observation_days": {"value": 28, "source": "design"},
     "max_cooldown_days": {"value": 10, "source": "design: arrivals continue after the observation window until every observed patient has left"},
-    "replications": {"value": 20, "source": "CI half-width rule on pilot runs (E0_pilot); see DECISIONS.md"},
+    "replications": {"value": 25, "source": "CI half-width rule on 10 pilot replications: at most 23 needed for a 5% relative half-width of mean LOS in every core ED type (experiments/results/E0_pilot/replications_needed)"},
+    "replications_secondary": {"value": 15, "source": "design: prediction-error sweep (E4), sensitivity runs (E5) and fidelity runs (E3); comparisons there are paired under common random numbers"},
     "base_seed": {"value": 20261107, "source": "design"}
   }
 }

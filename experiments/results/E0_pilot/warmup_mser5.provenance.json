@@ -1,0 +1,20 @@
+{
+  "experiment": "E0_pilot",
+  "edsim_version": "1.0.0",
+  "git_commit": "80bb6c3ee066fe5ab1d27a64df1b1d9e40f53455-dirty",
+  "config_sha256_16": "26ef430169d7986c",
+  "base_seed": 20261107,
+  "warmup_days": 3,
+  "observation_days": 28,
+  "max_cooldown_days": 10,
+  "python": "3.13.18",
+  "date_utc": "2026-11-08T00:10:00+00:00",
+  "file": "warmup_mser5.csv.gz",
+  "rows": 9,
+  "pilot_replications": 10,
+  "policy": {
+    "queue": "CTAS",
+    "routing": "STREAM-CTAS",
+    "source": "common practice: CTAS order with CTAS-based fast track"
+  }
+}

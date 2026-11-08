@@ -120,7 +120,7 @@ class Engine:
             self.second = cfg["areas"][1]
             self.second_holds = cfg["second_area_holds"]
             self.dedicated = cfg["dedicated_physicians"]
-            self.overflow = ed.config == "FASTTRACK"
+            self.overflow = bool(cfg.get("overflow_to_main", False))
 
         mk = lambda nm: RuleQueue(self.rule, nm)
         self.triage = Resource("TRIAGE", ed.triage_nurses, RuleQueue(FCFS("TRIAGE-FCFS"), "TRIAGE"))

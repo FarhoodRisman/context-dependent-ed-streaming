@@ -1,23 +1,96 @@
 {
   "_about": "Experimental design. Core: full factorial acuity x load x configuration (27 ED types) with boarding 'low' and diagnostic intensity 'typical'. Boarding and diagnostic intensity are varied one at a time on the medium-load types (sensitivity).",
   "factors": {
-    "acuity": ["tertiary", "community", "urgentcare"],
-    "load": ["low", "medium", "high"],
-    "config": ["POOLED", "FASTTRACK", "SPLITFLOW"],
-    "boarding": ["low", "high"],
-    "diagnostics": ["light", "typical", "heavy"]
+    "acuity": [
+      "tertiary",
+      "community",
+      "urgentcare"
+    ],
+    "load": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "config": [
+      "POOLED",
+      "FASTTRACK",
+      "SPLITFLOW"
+    ],
+    "boarding": [
+      "low",
+      "high"
+    ],
+    "diagnostics": [
+      "light",
+      "typical",
+      "heavy"
+    ]
   },
-  "core": {"boarding": "low", "diagnostics": "typical"},
+  "core": {
+    "boarding": "low",
+    "diagnostics": "typical"
+  },
   "configurations": {
-    "POOLED":    {"label": "Pooled", "areas": ["MAIN"], "description": "one treatment area, one physician pool"},
-    "FASTTRACK": {"label": "Fast track", "areas": ["MAIN", "FT"], "dedicated_physicians": true, "second_area_holds": "bed",
-                  "description": "Main area plus a fast-track area with its own spaces and physicians; a fast-track patient may take an idle Main space when no Main patient is waiting"},
-    "SPLITFLOW": {"label": "Split flow", "areas": ["MAIN", "VERT"], "dedicated_physicians": false, "second_area_holds": "encounter",
-                  "description": "Main beds plus a vertical area of chairs held only during physician encounters; one shared physician pool; admitted vertical patients board in a Main bed"}
+    "POOLED": {
+      "label": "Pooled",
+      "areas": [
+        "MAIN"
+      ],
+      "description": "one treatment area, one physician pool"
+    },
+    "FASTTRACK": {
+      "label": "Fast track",
+      "areas": [
+        "MAIN",
+        "FT"
+      ],
+      "dedicated_physicians": true,
+      "second_area_holds": "bed",
+      "description": "Main area plus a fast-track area with its own spaces and physicians; a fast-track patient may take an idle Main space when no Main patient is waiting",
+      "overflow_to_main": true
+    },
+    "SPLITFLOW": {
+      "label": "Split flow",
+      "areas": [
+        "MAIN",
+        "VERT"
+      ],
+      "dedicated_physicians": false,
+      "second_area_holds": "encounter",
+      "description": "Main beds plus a vertical area of chairs held only during physician encounters; one shared physician pool; admitted vertical patients board in a Main bed"
+    }
   },
   "second_area_share_basis": "offered space load of CTAS 4-5 patients",
-  "fidelity_ed_types": [["tertiary", "medium", "FASTTRACK"], ["community", "medium", "FASTTRACK"], ["urgentcare", "medium", "FASTTRACK"]],
+  "fidelity_ed_types": [
+    [
+      "tertiary",
+      "medium",
+      "FASTTRACK"
+    ],
+    [
+      "community",
+      "medium",
+      "FASTTRACK"
+    ],
+    [
+      "urgentcare",
+      "medium",
+      "FASTTRACK"
+    ]
+  ],
   "alpha_ed_types_load": "medium",
-  "alpha_queue_rules": ["CTAS", "APQ", "CTAS-SPT", "CTAS-PD", "SIM", "SIM-AGE"],
-  "alpha_routing_rules": ["STREAM-CTAS", "STREAM-PRED", "STREAM-SIM"]
+  "alpha_queue_rules": [
+    "CTAS",
+    "APQ",
+    "CTAS-SPT",
+    "CTAS-PD",
+    "SIM",
+    "SIM-AGE"
+  ],
+  "alpha_routing_rules": [
+    "STREAM-CTAS",
+    "STREAM-PRED",
+    "STREAM-SIM"
+  ],
+  "sizing": "Capacities are sized separately for the CTAS 1-3 stream and the CTAS 4-5 stream; every configuration gets the same totals (the pooled configuration pools them)."
 }

@@ -1,0 +1,12 @@
+rank,pathway,count,pct_of_all,cum_pct,ends_in
+V1,TR>RG>AS>DD,2699,24.3,24.3,discharge
+V2,TR>RG>AS>XR>DD,1390,12.5,36.9,discharge
+V3,TR>RG>AS>LB>XR>DD,950,8.6,45.4,discharge
+V4,TR>RG>AS>CT>XR>DR>AD,887,8.0,53.4,admission
+V5,TR>RG>AS>DR>DD,876,7.9,61.3,discharge
+V6,TR>RG>AS>LB>XR>DR>DD,523,4.7,66.0,discharge
+V7,TR>RG>AS>LB>AD,358,3.2,69.3,admission
+V8,TR>RG>AS>XR>LB>AD,296,2.7,71.9,admission
+V9,TR>RG>AS>LB>DD,288,2.6,74.5,discharge
+V10,TR>RG>AS>XR>LB>DD,237,2.1,76.7,discharge
+V11,TR>RG>AS>CT>DD,210,1.9,78.6,discharge

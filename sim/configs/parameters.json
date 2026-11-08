@@ -1,0 +1,96 @@
+{
+  "_about": "Every model input is entered once here, with its source. 'assumption' marks values without a published source; these are listed in MODEL_SPEC.md Section 9 and in the paper. Times are in minutes.",
+  "time_unit": "minutes",
+
+  "arrivals": {
+    "base_visits_per_day": {"value": 150, "source": "assumption: mid-sized urban ED (about 55,000 visits per year)"},
+    "hourly_profile": {
+      "value": [0.65, 0.55, 0.45, 0.40, 0.38, 0.40, 0.50, 0.70, 0.95, 1.20, 1.35, 1.40, 1.40, 1.35, 1.30, 1.25, 1.25, 1.25, 1.25, 1.20, 1.15, 1.05, 0.95, 0.80],
+      "source": "assumption: typical diurnal ED arrival shape (night trough, late-morning peak); normalised to mean 1 in code"
+    }
+  },
+
+  "acuity_mix": {
+    "_source": "Holroyd2016_EDCaseMix: pooled CTAS distribution and between-site ranges for the 16 highest-volume Alberta EDs (NACRS, 2013/14). 'community' is the pooled distribution; the other two archetypes lie inside the reported ranges, near their ends.",
+    "community":   {"value": [0.010, 0.180, 0.440, 0.300, 0.070], "source": "Holroyd2016_EDCaseMix (pooled: 1%, 18%, 44%, 30%, 7%)"},
+    "tertiary":    {"value": [0.025, 0.320, 0.450, 0.170, 0.035], "source": "Holroyd2016_EDCaseMix ranges (CTAS1 0.2-2.8%, CTAS2 3.3-33.3%, CTAS3 29.1-54.1%, CTAS4 16.7-49.0%, CTAS5 3.1-12.3%); high-acuity end"},
+    "urgentcare":  {"value": [0.002, 0.040, 0.348, 0.490, 0.120], "source": "Holroyd2016_EDCaseMix ranges; low-acuity end"}
+  },
+
+  "admission_probability_by_ctas": {
+    "value": [0.5955, 0.3050, 0.1505, 0.0505, 0.0460],
+    "source": "Holroyd2016_EDCaseMix: midpoints of the reported between-site ranges (CTAS1 43.9-75.2%, CTAS2 18.9-42.1%, CTAS3 5.4-24.7%, CTAS4 0.8-9.3%, CTAS5 0.1-9.1%)"
+  },
+
+  "pathways": {
+    "file": "lit/pathways_Rismanchian2023_VIH.csv",
+    "source": "Rismanchian2023_PatientJourney: the 11 most frequent pathways (78.6% of visits); renormalised within each disposition",
+    "diagnostic_tilt_by_ctas": {
+      "value": [0.50, 0.30, 0.00, -0.30, -0.50],
+      "source": "assumption: log-weight change per diagnostic/consult step, by CTAS level (higher acuity -> more diagnostics); 0 for CTAS 3 reproduces the published frequencies"
+    },
+    "diagnostic_intensity_shift": {
+      "value": {"light": -0.50, "typical": 0.00, "heavy": 0.50},
+      "source": "assumption: added to every CTAS tilt (factor 'diagnostic intensity')"
+    }
+  },
+
+  "durations": {
+    "_note": "Lognormal, given by mean and coefficient of variation (CV). Sampled once per patient, so they do not depend on the policy.",
+    "triage":                {"mean": 6,   "cv": 0.5, "source": "assumption"},
+    "registration":          {"mean": 5,   "cv": 0.5, "source": "assumption (delay, no resource)"},
+    "physician_initial_by_ctas": {"mean": [40, 30, 25, 18, 12], "cv": 0.6, "source": "assumption (longer for higher acuity)"},
+    "physician_reassessment": {"mean": 12,  "cv": 0.6, "source": "assumption"},
+    "LB":                    {"mean": 60,  "cv": 0.5, "source": "assumption (laboratory turnaround)"},
+    "XR":                    {"mean": 25,  "cv": 0.5, "source": "assumption (including transport)"},
+    "CT":                    {"mean": 35,  "cv": 0.5, "source": "assumption (including transport)"},
+    "DR":                    {"mean": 60,  "cv": 0.7, "source": "assumption (consultant arrival and assessment)"},
+    "discharge_process":     {"mean": 15,  "cv": 0.6, "source": "assumption"},
+    "boarding": {
+      "low":  {"mean": 180, "cv": 1.0, "source": "assumption informed by provincial median waits for an inpatient bed (Alberta 3.6 h, Ontario 7 h, 2022/23; CDA-AMC 2024)"},
+      "high": {"mean": 480, "cv": 1.0, "source": "assumption informed by the same figures (upper level)"}
+    }
+  },
+
+  "capacity_sizing": {
+    "_note": "Capacities are derived by code from these targets for the 'medium' load level; the same capacities are then used at all load levels (load changes the arrival rate).",
+    "physician_target_utilisation_medium": {"value": 0.80, "source": "design choice"},
+    "space_sizing_utilisation": {"value": 0.60, "source": "calibration: treatment spaces sized on service-only holding time (waits excluded); 0.60 keeps the high load level stable, with 90th-percentile door-to-physician times of the same order as the Canadian national value (DECISIONS.md, 2026-11-08)"},
+    "diagnostic_target_utilisation": {"value": 0.60, "source": "design choice: diagnostics are not the main bottleneck"},
+    "triage_target_utilisation_peak": {"value": 0.70, "source": "design choice"},
+    "shifts_start_hours": {"value": [0, 8, 16], "source": "assumption: three 8-hour physician shifts"}
+  },
+
+  "load_levels": {
+    "value": {"low": 0.70, "medium": 0.80, "high": 0.90},
+    "source": "design: average physician offered load; reached by scaling the arrival rate"
+  },
+
+  "ctas_targets_minutes": {
+    "value": [15, 15, 30, 60, 120],
+    "source": "Bullard2017_CTAS response-time objectives for physician assessment; CTAS1 'immediate' adapted to 15 min (study-specific)"
+  },
+
+  "prediction": {
+    "_note": "Predicted attributes come from the true ones through confusion matrices. M(alpha) = I + alpha (M_ref - I); alpha = 0 is perfect information, alpha = 1 the reference accuracy.",
+    "service_class_quantiles": {"value": [0.2, 0.4, 0.6, 0.8], "source": "design: five equal-frequency classes of total treatment time, cut points from the community/typical ED"},
+    "reference_accuracy": {
+      "admission":   {"value": 0.85, "source": "assumption, in the range reported for triage-time admission models (e.g. Hong2018_disposition, SUN2011_disposition)"},
+      "service":     {"value": 0.45, "source": "assumption: exact-class accuracy for a five-class ordinal target; errors go mostly to neighbouring classes"},
+      "diagnostics": {"value": 0.80, "source": "assumption"},
+      "consult":     {"value": 0.80, "source": "assumption"},
+      "resource":    {"value": 0.55, "source": "assumption"}
+    },
+    "ordinal_error_decay": {"value": 0.35, "source": "assumption: error mass on a class at distance d is proportional to decay^(d-1)"},
+    "alpha_main": {"value": 1.0, "source": "design"},
+    "alpha_sweep": {"value": [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5], "source": "design"}
+  },
+
+  "run_control": {
+    "warmup_days": {"value": 3, "source": "MSER-5 on pilot runs (experiments/results/E0_pilot); see DECISIONS.md"},
+    "observation_days": {"value": 28, "source": "design"},
+    "max_cooldown_days": {"value": 10, "source": "design: arrivals continue after the observation window until every observed patient has left"},
+    "replications": {"value": 20, "source": "CI half-width rule on pilot runs (E0_pilot); see DECISIONS.md"},
+    "base_seed": {"value": 20261107, "source": "design"}
+  }
+}

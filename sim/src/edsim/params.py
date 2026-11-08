@@ -1,0 +1,228 @@
+"""Load the configuration files and derive the quantities that depend on them.
+
+Every input number lives in sim/configs/*.json. This module only reads those
+numbers and derives capacities, rates and probabilities from them; it types
+no model inputs of its own.
+"""
+from __future__ import annotations
+
+import csv
+import json
+import math
+from dataclasses import dataclass, field
+from functools import lru_cache
+from pathlib import Path
+
+import numpy as np
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+CONFIG_DIR = REPO_ROOT / "sim" / "configs"
+
+DIAG_STAGES = ("LB", "XR", "CT", "DR")
+MIN_PER_DAY = 1440.0
+
+
+def _load(name: str) -> dict:
+    with open(CONFIG_DIR / name, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+@lru_cache(maxsize=None)
+def parameters() -> dict:
+    return _load("parameters.json")
+
+
+@lru_cache(maxsize=None)
+def policies_config() -> dict:
+    return _load("policies.json")
+
+
+@lru_cache(maxsize=None)
+def design() -> dict:
+    return _load("design.json")
+
+
+def v(entry):
+    """Return the 'value' of a parameter entry."""
+    return entry["value"] if isinstance(entry, dict) and "value" in entry else entry
+
+
+# ---------------------------------------------------------------- pathways
+@dataclass(frozen=True)
+class Pathway:
+    name: str
+    steps: tuple          # diagnostic/consult steps in order, e.g. ("LB", "XR")
+    admit: bool
+    base_freq: float      # published relative frequency
+
+
+@lru_cache(maxsize=None)
+def pathways() -> tuple:
+    path = REPO_ROOT / parameters()["pathways"]["file"]
+    out = []
+    with open(path, encoding="utf-8") as fh:
+        for row in csv.DictReader(fh):
+            stages = row["pathway"].split(">")
+            steps = tuple(s for s in stages if s in DIAG_STAGES)
+            out.append(Pathway(row["rank"], steps, row["ends_in"] == "admission", float(row["count"])))
+    return tuple(out)
+
+
+def pathway_probs(ctas: int, admit: bool, diag_level: str) -> np.ndarray:
+    """P(pathway | CTAS, disposition) over all pathways (zero for the other disposition)."""
+    p = parameters()["pathways"]
+    tilt = v(p["diagnostic_tilt_by_ctas"])[ctas - 1] + v(p["diagnostic_intensity_shift"])[diag_level]
+    w = np.array([pw.base_freq * math.exp(tilt * len(pw.steps)) if pw.admit == admit else 0.0
+                  for pw in pathways()])
+    return w / w.sum()
+
+
+# ---------------------------------------------------------------- durations
+def lognormal_params(mean: float, cv: float) -> tuple:
+    s2 = math.log(1.0 + cv * cv)
+    return math.log(mean) - s2 / 2.0, math.sqrt(s2)
+
+
+def duration_means(boarding: str) -> dict:
+    d = parameters()["durations"]
+    return {
+        "triage": d["triage"]["mean"], "registration": d["registration"]["mean"],
+        "AS": d["physician_initial_by_ctas"]["mean"], "RA": d["physician_reassessment"]["mean"],
+        "LB": d["LB"]["mean"], "XR": d["XR"]["mean"], "CT": d["CT"]["mean"], "DR": d["DR"]["mean"],
+        "DD": d["discharge_process"]["mean"], "BOARD": d["boarding"][boarding]["mean"],
+    }
+
+
+# ---------------------------------------------------------------- expected workloads
+def expected_workloads(acuity: str, diag_level: str, boarding: str, ctas_subset=None) -> dict:
+    """Expected work per arriving patient (minutes), optionally only for some CTAS levels
+    (the returned values are still per arriving patient, i.e. weighted by the CTAS share)."""
+    mix = v(parameters()["acuity_mix"][acuity])
+    p_adm = v(parameters()["admission_probability_by_ctas"])
+    m = duration_means(boarding)
+    pws = pathways()
+    out = {"physician": 0.0, "space": 0.0, "LB": 0.0, "XR": 0.0, "CT": 0.0, "DR": 0.0}
+    for c in range(1, 6):
+        if ctas_subset is not None and c not in ctas_subset:
+            continue
+        for admit, pa in ((True, p_adm[c - 1]), (False, 1 - p_adm[c - 1])):
+            probs = pathway_probs(c, admit, diag_level)
+            for pw, pp in zip(pws, probs):
+                if pp == 0:
+                    continue
+                w = mix[c - 1] * pa * pp
+                has_diag = len(pw.steps) > 0
+                phys = m["AS"][c - 1] + (m["RA"] if has_diag else 0.0)
+                diag = sum(m[s] for s in pw.steps)
+                end = m["BOARD"] if admit else m["DD"]
+                out["physician"] += w * phys
+                out["space"] += w * (phys + diag + end)
+                for s in pw.steps:
+                    out[s] += w * m[s]
+    return out
+
+
+def hourly_profile() -> np.ndarray:
+    prof = np.array(v(parameters()["arrivals"]["hourly_profile"]), dtype=float)
+    return prof / prof.mean()
+
+
+# ---------------------------------------------------------------- ED type
+@dataclass
+class EDType:
+    acuity: str
+    load: str
+    config: str
+    boarding: str = "low"
+    diagnostics: str = "typical"
+    # derived
+    visits_per_day: float = 0.0
+    load_multiplier: float = 1.0
+    physicians_by_shift: list = field(default_factory=list)          # total per shift
+    second_physicians_by_shift: list = field(default_factory=list)   # FASTTRACK only
+    spaces_total: int = 0
+    spaces_second: int = 0
+    diag_capacity: dict = field(default_factory=dict)
+    triage_nurses: int = 0
+    offered_physician_load: float = 0.0
+
+    @property
+    def key(self) -> str:
+        return f"{self.acuity}|{self.load}|{self.config}|{self.boarding}|{self.diagnostics}"
+
+    @property
+    def areas(self) -> list:
+        return design()["configurations"][self.config]["areas"]
+
+    def to_dict(self) -> dict:
+        return {k: getattr(self, k) for k in self.__dataclass_fields__}
+
+
+def build_ed_type(acuity: str, load: str, config: str, boarding: str = "low",
+                  diagnostics: str = "typical") -> EDType:
+    """Derive capacities and arrival rate for one ED type.
+
+    Capacities are sized for the 'medium' load level with the core boarding and
+    diagnostic levels, so that the sensitivity factors change demand but not capacity.
+    """
+    P = parameters()
+    cs = P["capacity_sizing"]
+    core = design()["core"]
+    base_rate = v(P["arrivals"]["base_visits_per_day"])
+    prof = hourly_profile()
+    shifts = v(cs["shifts_start_hours"])
+    rho_med = v(cs["physician_target_utilisation_medium"])
+
+    wl = expected_workloads(acuity, core["diagnostics"], core["boarding"])
+    wl_low = expected_workloads(acuity, core["diagnostics"], core["boarding"], ctas_subset=(4, 5))
+
+    # physicians per shift, sized at the base arrival rate
+    phys = []
+    shift_rates = []
+    for i, h0 in enumerate(shifts):
+        h1 = shifts[i + 1] if i + 1 < len(shifts) else 24
+        lam = base_rate / MIN_PER_DAY * prof[h0:h1].mean()      # patients per minute
+        shift_rates.append((lam, h1 - h0))
+        phys.append(int(math.ceil(lam * wl["physician"] / rho_med)))
+    offered = sum(l * wl["physician"] * hrs for l, hrs in shift_rates)
+    capacity = sum(c * hrs for c, (_, hrs) in zip(phys, shift_rates))
+    rho0 = offered / capacity
+    rate_medium = base_rate * rho_med / rho0
+
+    # treatment spaces and diagnostics sized at the medium arrival rate
+    lam_med = rate_medium / MIN_PER_DAY
+    n_space = int(math.ceil(lam_med * wl["space"] / v(cs["space_sizing_utilisation"])))
+    diag_cap = {s: max(1, int(math.ceil(lam_med * wl[s] / v(cs["diagnostic_target_utilisation"]))))
+                for s in DIAG_STAGES}
+
+    # second area (FASTTRACK / SPLITFLOW): share of CTAS 4-5 space load
+    share_space = wl_low["space"] / wl["space"]
+    share_phys = wl_low["physician"] / wl["physician"]
+    n_second, phys_second = 0, []
+    if config != "POOLED":
+        n_second = min(n_space - 1, max(1, int(round(n_space * share_space))))
+        if config == "FASTTRACK":
+            phys_second = [min(c - 1, max(1, int(round(c * share_phys)))) for c in phys]
+
+    # actual load level
+    target = v(P["load_levels"])[load]
+    rate = rate_medium * target / rho_med
+    exp_wl = expected_workloads(acuity, diagnostics, boarding)
+    offered_load = sum(rate / MIN_PER_DAY * l / (base_rate / MIN_PER_DAY) * exp_wl["physician"] * hrs
+                       for l, hrs in shift_rates) / capacity
+
+    # triage nurses: peak hour at the high load level
+    rate_high = rate_medium * v(P["load_levels"])["high"] / rho_med
+    peak = rate_high / MIN_PER_DAY * prof.max()
+    nurses = int(math.ceil(peak * P["durations"]["triage"]["mean"] / v(cs["triage_target_utilisation_peak"])))
+
+    return EDType(acuity, load, config, boarding, diagnostics,
+                  visits_per_day=rate, load_multiplier=rate / base_rate,
+                  physicians_by_shift=phys, second_physicians_by_shift=phys_second,
+                  spaces_total=n_space, spaces_second=n_second, diag_capacity=diag_cap,
+                  triage_nurses=nurses, offered_physician_load=offered_load)
+
+
+def core_ed_types() -> list:
+    f = design()["factors"]
+    return [build_ed_type(a, l, c) for a in f["acuity"] for l in f["load"] for c in f["config"]]

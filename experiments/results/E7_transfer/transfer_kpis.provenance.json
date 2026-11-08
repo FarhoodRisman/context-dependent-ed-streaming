@@ -1,0 +1,26 @@
+{
+  "experiment": "E7_transfer",
+  "edsim_version": "1.0.0",
+  "git_commit": "d13229da9116e1a463d906a12811af0bde3ec696-dirty",
+  "config_sha256_16": "4f226acab83a7e71",
+  "base_seed": 20261107,
+  "warmup_days": 2,
+  "observation_days": 28,
+  "max_cooldown_days": 10,
+  "python": "3.13.18",
+  "date_utc": "2026-11-08T21:10:20+00:00",
+  "file": "transfer_kpis.csv.gz",
+  "rows": 40,
+  "reps": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ]
+}

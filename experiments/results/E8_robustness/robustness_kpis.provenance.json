@@ -1,0 +1,55 @@
+{
+  "experiment": "E8_robustness",
+  "edsim_version": "1.0.0",
+  "git_commit": "d13229da9116e1a463d906a12811af0bde3ec696-dirty",
+  "config_sha256_16": "4f226acab83a7e71",
+  "base_seed": 20261107,
+  "warmup_days": 2,
+  "observation_days": 28,
+  "max_cooldown_days": 10,
+  "python": "3.13.18",
+  "date_utc": "2026-11-08T21:10:24+00:00",
+  "file": "robustness_kpis.csv.gz",
+  "rows": 28,
+  "reps": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "variants": {
+    "phys_minus10": {
+      "phys_mult": 0.9
+    },
+    "phys_plus10": {
+      "phys_mult": 1.1
+    },
+    "diag_minus25": {
+      "diag_mult": 0.75
+    },
+    "diag_plus25": {
+      "diag_mult": 1.25
+    },
+    "cv_half": {
+      "cv_mult": 0.5
+    },
+    "cv_plus50": {
+      "cv_mult": 1.5
+    },
+    "profile_flat": {
+      "profile_power": 0.0
+    },
+    "profile_peaked": {
+      "profile_power": 1.5
+    },
+    "pred_correlated": {
+      "corr_pred": true
+    }
+  }
+}

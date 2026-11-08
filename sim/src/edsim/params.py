@@ -68,10 +68,18 @@ def pathways() -> tuple:
     return tuple(out)
 
 
-def pathway_probs(ctas: int, admit: bool, diag_level: str) -> np.ndarray:
-    """P(pathway | CTAS, disposition) over all pathways (zero for the other disposition)."""
+def diag_shift_value(diag_level) -> float:
+    """Numeric diagnostic-intensity shift for a named level (or a number passed through)."""
+    if isinstance(diag_level, str):
+        return v(parameters()["pathways"]["diagnostic_intensity_shift"])[diag_level]
+    return float(diag_level)
+
+
+def pathway_probs(ctas: int, admit: bool, diag_level) -> np.ndarray:
+    """P(pathway | CTAS, disposition) over all pathways (zero for the other disposition).
+    diag_level is a named level ('light', 'typical', 'heavy') or a numeric shift."""
     p = parameters()["pathways"]
-    tilt = v(p["diagnostic_tilt_by_ctas"])[ctas - 1] + v(p["diagnostic_intensity_shift"])[diag_level]
+    tilt = v(p["diagnostic_tilt_by_ctas"])[ctas - 1] + diag_shift_value(diag_level)
     w = np.array([pw.base_freq * math.exp(tilt * len(pw.steps)) if pw.admit == admit else 0.0
                   for pw in pathways()])
     return w / w.sum()
@@ -83,21 +91,35 @@ def lognormal_params(mean: float, cv: float) -> tuple:
     return math.log(mean) - s2 / 2.0, math.sqrt(s2)
 
 
-def duration_means(boarding: str) -> dict:
+def boarding_mean_value(boarding) -> float:
+    if isinstance(boarding, str):
+        return parameters()["durations"]["boarding"][boarding]["mean"]
+    return float(boarding)
+
+
+def duration_means(boarding) -> dict:
     d = parameters()["durations"]
     return {
         "triage": d["triage"]["mean"], "registration": d["registration"]["mean"],
         "AS": d["physician_initial_by_ctas"]["mean"], "RA": d["physician_reassessment"]["mean"],
         "LB": d["LB"]["mean"], "XR": d["XR"]["mean"], "CT": d["CT"]["mean"], "DR": d["DR"]["mean"],
-        "DD": d["discharge_process"]["mean"], "BOARD": d["boarding"][boarding]["mean"],
+        "DD": d["discharge_process"]["mean"], "BOARD": boarding_mean_value(boarding),
     }
 
 
+def mix_value(acuity) -> list:
+    """CTAS shares for a named acuity mix (or a 5-vector passed through)."""
+    if isinstance(acuity, str):
+        return v(parameters()["acuity_mix"][acuity])
+    return list(acuity)
+
+
 # ---------------------------------------------------------------- expected workloads
-def expected_workloads(acuity: str, diag_level: str, boarding: str, ctas_subset=None) -> dict:
+def expected_workloads(acuity, diag_level, boarding, ctas_subset=None) -> dict:
     """Expected work per arriving patient (minutes), optionally only for some CTAS levels
-    (the returned values are still per arriving patient, i.e. weighted by the CTAS share)."""
-    mix = v(parameters()["acuity_mix"][acuity])
+    (the returned values are still per arriving patient, i.e. weighted by the CTAS share).
+    acuity, diag_level and boarding are names or numeric values (mix vector, shift, mean)."""
+    mix = mix_value(acuity)
     p_adm = v(parameters()["admission_probability_by_ctas"])
     m = duration_means(boarding)
     pws = pathways()
@@ -122,8 +144,11 @@ def expected_workloads(acuity: str, diag_level: str, boarding: str, ctas_subset=
     return out
 
 
-def hourly_profile() -> np.ndarray:
+def hourly_profile(power: float = 1.0) -> np.ndarray:
+    """Hourly arrival profile normalised to mean 1; power != 1 flattens (<1) or sharpens (>1) it."""
     prof = np.array(v(parameters()["arrivals"]["hourly_profile"]), dtype=float)
+    if power != 1.0:
+        prof = prof ** power
     return prof / prof.mean()
 
 
@@ -145,6 +170,12 @@ class EDType:
     diag_capacity: dict = field(default_factory=dict)
     triage_nurses: int = 0
     offered_physician_load: float = 0.0
+    # demand inputs (names resolved to values); capacities above stay at core sizing
+    mix: tuple = ()
+    diag_shift: float = 0.0
+    board_mean: float = 0.0
+    perturb: dict = field(default_factory=dict)   # phys_mult, diag_mult, cv_mult, profile_power, corr_pred
+    seed_parts: tuple = ()
 
     @property
     def key(self) -> str:
@@ -158,12 +189,15 @@ class EDType:
         return {k: getattr(self, k) for k in self.__dataclass_fields__}
 
 
-def build_ed_type(acuity: str, load: str, config: str, boarding: str = "low",
-                  diagnostics: str = "typical") -> EDType:
+def build_ed_type(acuity, load, config: str, boarding="low", diagnostics="typical",
+                  perturb: dict | None = None, seed_parts: tuple | None = None, label: str | None = None) -> EDType:
     """Derive capacities and arrival rate for one ED type.
 
     Capacities are sized for the 'medium' load level with the core boarding and
     diagnostic levels, so that the sensitivity factors change demand but not capacity.
+    acuity may be a name or a CTAS-share vector; load a name or an offered-load value;
+    boarding a name or a mean (minutes); diagnostics a name or a numeric shift.
+    perturb changes demand-side inputs only (robustness experiments).
     """
     P = parameters()
     cs = P["capacity_sizing"]
@@ -212,7 +246,7 @@ def build_ed_type(acuity: str, load: str, config: str, boarding: str = "low",
 
     # actual load level: the arrival rate is scaled so that the busiest physician pool
     # (under the reference CTAS 4-5 split for FASTTRACK) has the target offered load
-    target = v(P["load_levels"])[load]
+    target = v(P["load_levels"])[load] if isinstance(load, str) else float(load)
     if config == "FASTTRACK":
         cap_lo = sum(c * hrs for c, (_, hrs) in zip(phys_low, shift_rates))
         rho_hi = sum(l * wl_hi["physician"] * hrs for l, hrs in shift_rates) / (capacity - cap_lo)
@@ -228,11 +262,20 @@ def build_ed_type(acuity: str, load: str, config: str, boarding: str = "low",
     peak = rate_high / MIN_PER_DAY * prof.max()
     nurses = int(math.ceil(peak * P["durations"]["triage"]["mean"] / v(cs["triage_target_utilisation_peak"])))
 
-    return EDType(acuity, load, config, boarding, diagnostics,
+    if seed_parts is None:
+        f = design()["factors"]
+        seed_parts = (f["acuity"].index(acuity), f["load"].index(load),
+                      f["diagnostics"].index(diagnostics), f["boarding"].index(boarding))
+    name = lambda x, fmt: x if isinstance(x, str) else fmt.format(x)
+    return EDType(label or name(acuity if isinstance(acuity, str) else "custom", "{}"),
+                  name(load, "{:.3f}"), config, name(boarding, "{:.0f}"), name(diagnostics, "{:+.2f}"),
                   visits_per_day=rate, load_multiplier=rate / base_rate,
                   physicians_by_shift=phys, second_physicians_by_shift=phys_second,
                   spaces_total=n_space, spaces_second=n_second, diag_capacity=diag_cap,
-                  triage_nurses=nurses, offered_physician_load=offered_load)
+                  triage_nurses=nurses, offered_physician_load=offered_load,
+                  mix=tuple(mix_value(acuity)), diag_shift=diag_shift_value(diagnostics),
+                  board_mean=boarding_mean_value(boarding), perturb=dict(perturb or {}),
+                  seed_parts=tuple(int(x) for x in seed_parts))
 
 
 def core_ed_types() -> list:

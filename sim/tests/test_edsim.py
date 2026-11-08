@@ -243,3 +243,47 @@ def test_alpha_zero_is_truth():
     assert all(p.pred[0.0] == p.code_true for p in pts)
     acc = np.mean([p.pred[1.0][2] == p.code_true[2] for p in pts])
     assert 0.80 < acc < 0.90
+
+
+# ------------------------------------------------------------------ v1.1 extensions
+def test_fast_kpis_equal_full_kpis(small_runs):
+    from edsim.kpis import fast_kpis
+    for cfg, (ed, pts, eng) in small_runs.items():
+        a, b = fast_kpis(eng), compute_kpis(eng)
+        for k in ("ratp", "awt", "los_all_mean", "pia_all_mean", "n_patients"):
+            assert math.isclose(a[k], b[k], rel_tol=1e-12, abs_tol=1e-12), (cfg, k)
+
+
+def test_named_and_numeric_ed_types_identical():
+    """A type built from numeric inputs equal to a named type gives the same patients."""
+    a = P.build_ed_type("tertiary", "medium", "FASTTRACK", boarding="high", diagnostics="heavy")
+    b = P.build_ed_type(P.mix_value("tertiary"), P.v(P.parameters()["load_levels"])["medium"], "FASTTRACK",
+                        boarding=P.boarding_mean_value("high"), diagnostics=P.diag_shift_value("heavy"),
+                        seed_parts=a.seed_parts)
+    assert (a.physicians_by_shift, a.spaces_total, a.visits_per_day) == (b.physicians_by_shift, b.spaces_total, b.visits_per_day)
+    pa, pb = generate(a, 1), generate(b, 1)
+    assert [(p.arrival, p.ctas, p.d_end, p.pred[1.0]) for p in pa] == [(p.arrival, p.ctas, p.d_end, p.pred[1.0]) for p in pb]
+
+
+def test_ra_bonus_and_routing_offset():
+    r = Similarity("s", [1, 0, 0, 0, 0, 0], [1, 5, 2, 2, 4, 2], ra_bonus=0.3)
+    # CTAS3 reassessment (score 0.5 + 0.3) beats CTAS2 new patient (0.75)
+    q = RuleQueue(r)
+    q.push(0, 2, (2, 3, 2, 2, 4, 2), 0.0, 0, "AS")
+    q.push(1, 3, (3, 3, 2, 2, 4, 2), 5.0, 1, "RA")
+    assert q.pop(10.0)[0] == 1
+    rr0 = RouteSimilarity("x", [1, 0, 0, 0, 0, 0], [1] * 6, [5, 5, 2, 2, 4, 2], ctas_floor=1)
+    rr1 = RouteSimilarity("x", [1, 0, 0, 0, 0, 0], [1] * 6, [5, 5, 2, 2, 4, 2], ctas_floor=1, offset=-0.3)
+    c3 = (3, 3, 2, 2, 4, 2)
+    assert not rr0.to_second(3, c3) and rr1.to_second(3, c3)
+
+
+def test_perturbations_change_demand_not_capacity():
+    a = P.build_ed_type("community", "medium", "POOLED")
+    b = P.build_ed_type("community", "medium", "POOLED", perturb={"diag_mult": 1.25, "corr_pred": True})
+    assert (a.spaces_total, a.physicians_by_shift, a.visits_per_day) == (b.spaces_total, b.physicians_by_shift, b.visits_per_day)
+    pa, pb = generate(a, 0), generate(b, 0)
+    assert [p.arrival for p in pa] == [p.arrival for p in pb]
+    lb = [(x.d_steps, y.d_steps) for x, y in zip(pa, pb) if "LB" in x.steps][:50]
+    assert all(math.isclose(y[0] / x[0], 1.25) for x, y in lb if x)
+    assert all(len(set(p.pred[1.0][1:]) ) >= 1 for p in pb)

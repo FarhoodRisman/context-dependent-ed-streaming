@@ -38,7 +38,7 @@ class RuleQueue:
         self.name = name
 
     def push(self, pid, ctas, code, t_enter, seq, payload):
-        sk = self.rule.static_key(code, ctas, t_enter, seq)
+        sk = self.rule.static_key(code, ctas, t_enter, seq, payload)
         heapq.heappush(self.heaps[ctas], (sk, pid, payload))
         self.n += 1
 
@@ -103,6 +103,7 @@ class Engine:
         self.step_i = [0] * self.n
         self.observed_left = sum(1 for p in patients if self.warm <= p.arrival < self.obs_end)
         self.depart = [math.nan] * self.n
+        self.t_pia = [math.nan] * self.n
         # fidelity logging
         self.shadow = shadow
         self.shadow_routing = shadow_routing
@@ -185,7 +186,7 @@ class Engine:
                     k = rule.dyn_key(sk, c, now)
                 else:
                     p = self.pts[pid]
-                    sk2 = rule.static_key(self.codes[pid], c, sk[-2], sk[-1])
+                    sk2 = rule.static_key(self.codes[pid], c, sk[-2], sk[-1], _)
                     k = rule.dyn_key(sk2, c, now)
                 out.append((0 if c == 1 else 1,) + k)
             return out
@@ -237,6 +238,8 @@ class Engine:
                 self._enqueue(self._pool(pid), pid, payload)
         elif name.startswith("PHYS"):
             self.start[pid] = now
+            if payload == "AS":
+                self.t_pia[pid] = now
             d = p.d_as if payload == "AS" else p.d_ra
             self._schedule(now + d, PHYS_END, pid, (payload, name))
         else:  # diagnostic / consult

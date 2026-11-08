@@ -148,3 +148,27 @@ def compute_kpis(engine) -> dict:
         out[f"wait_{st}_mean"] = float((s.t_start - s.t_req).mean()) if len(s) else np.nan
     out.update(utilisation(engine, log))
     return out
+
+
+def fast_kpis(engine) -> dict:
+    """RATP, AWT, mean LOS and mean door-to-physician time from the engine's patient arrays.
+
+    Used inside the simulation optimization, where only these measures are needed. The
+    definitions are the same as above (tests check equality with compute_kpis)."""
+    ub = P.v(P.parameters()["ctas_targets_minutes"])
+    pts = engine.pts
+    arr = np.fromiter((p.arrival for p in pts), float, len(pts))
+    ctas = np.fromiter((p.ctas for p in pts), int, len(pts))
+    obs = (arr >= engine.warm) & (arr < engine.obs_end)
+    w = np.asarray(engine.t_pia, float)[obs] - arr[obs]
+    los = np.asarray(engine.depart, float)[obs] - arr[obs]
+    c = ctas[obs]
+    ratp_v, awt_v = 0.0, 0.0
+    for l in range(1, 6):
+        sel = c == l
+        if sel.any():
+            ratp_v += float((w[sel] > ub[l - 1]).mean()) / l
+            awt_v += float(np.maximum(w[sel] - ub[l - 1], 0.0).mean()) / l
+    return {"ratp": ratp_v, "awt": awt_v, "los_all_mean": float(los.mean()),
+            "pia_all_mean": float(w.mean()), "n_patients": int(obs.sum()),
+            "n_unfinished": int(np.isnan(los).sum())}

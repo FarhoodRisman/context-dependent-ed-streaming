@@ -77,7 +77,7 @@ def service_cutpoints() -> tuple:
     """Cut points of total treatment time for the five service classes, from a
     reference sample of the community ED with typical diagnostics (fixed seed)."""
     rng = np.random.default_rng(seed_for(999, 0))
-    sample = _sample_attributes(rng, 200_000, "community", "typical", "low")["service_total"]
+    sample = _sample_attributes(rng, 200_000, "community", "typical", "low")["service_total"]  # reference ED, unperturbed
     q = P.v(P.parameters()["prediction"]["service_class_quantiles"])
     return tuple(float(x) for x in np.quantile(sample, q))
 
@@ -95,10 +95,14 @@ def _lognormal(rng, mean, cv, size):
     return rng.lognormal(mu, s, size)
 
 
-def _sample_attributes(rng, n, acuity, diag_level, boarding):
+def _sample_attributes(rng, n, acuity, diag_level, boarding, perturb=None):
+    """acuity: name or CTAS-share vector; diag_level: name or shift; boarding: name or mean.
+    perturb (robustness only): phys_mult, diag_mult multiply mean durations; cv_mult multiplies CVs."""
     par = P.parameters()
     d = par["durations"]
-    mix = np.array(P.v(par["acuity_mix"][acuity]))
+    pt = perturb or {}
+    pm, dm, cm = pt.get("phys_mult", 1.0), pt.get("diag_mult", 1.0), pt.get("cv_mult", 1.0)
+    mix = np.array(P.mix_value(acuity))
     ctas = rng.choice(np.arange(1, 6), size=n, p=mix / mix.sum())
     p_adm = np.array(P.v(par["admission_probability_by_ctas"]))
     admit = rng.random(n) < p_adm[ctas - 1]
@@ -111,16 +115,16 @@ def _sample_attributes(rng, n, acuity, diag_level, boarding):
             if sel.any():
                 cdf = np.cumsum(P.pathway_probs(c, a, diag_level))
                 path_idx[sel] = np.minimum(np.searchsorted(cdf, u[sel], side="right"), len(cdf) - 1)
-    as_mean = np.array(d["physician_initial_by_ctas"]["mean"], dtype=float)[ctas - 1]
-    mu_s2 = np.log(1 + d["physician_initial_by_ctas"]["cv"] ** 2)
+    as_mean = np.array(d["physician_initial_by_ctas"]["mean"], dtype=float)[ctas - 1] * pm
+    mu_s2 = np.log(1 + (d["physician_initial_by_ctas"]["cv"] * cm) ** 2)
     d_as = rng.lognormal(np.log(as_mean) - mu_s2 / 2, math.sqrt(mu_s2))
-    d_ra = _lognormal(rng, d["physician_reassessment"]["mean"], d["physician_reassessment"]["cv"], n)
-    step_d = {s: _lognormal(rng, d[s]["mean"], d[s]["cv"], n) for s in P.DIAG_STAGES}
-    d_dd = _lognormal(rng, d["discharge_process"]["mean"], d["discharge_process"]["cv"], n)
-    bd = d["boarding"][boarding]
-    d_board = _lognormal(rng, bd["mean"], bd["cv"], n)
-    d_tri = _lognormal(rng, d["triage"]["mean"], d["triage"]["cv"], n)
-    d_reg = _lognormal(rng, d["registration"]["mean"], d["registration"]["cv"], n)
+    d_ra = _lognormal(rng, d["physician_reassessment"]["mean"] * pm, d["physician_reassessment"]["cv"] * cm, n)
+    step_d = {s: _lognormal(rng, d[s]["mean"] * dm, d[s]["cv"] * cm, n) for s in P.DIAG_STAGES}
+    d_dd = _lognormal(rng, d["discharge_process"]["mean"], d["discharge_process"]["cv"] * cm, n)
+    bcv = d["boarding"]["low"]["cv"] if not isinstance(boarding, str) else d["boarding"][boarding]["cv"]
+    d_board = _lognormal(rng, P.boarding_mean_value(boarding), bcv * cm, n)
+    d_tri = _lognormal(rng, d["triage"]["mean"], d["triage"]["cv"] * cm, n)
+    d_reg = _lognormal(rng, d["registration"]["mean"], d["registration"]["cv"] * cm, n)
     steps = [pws[i].steps for i in path_idx]
     has_diag = np.array([len(s) > 0 for s in steps])
     diag_sum = np.array([sum(step_d[s][k] for s in st) for k, st in enumerate(steps)])
@@ -130,8 +134,8 @@ def _sample_attributes(rng, n, acuity, diag_level, boarding):
                 service_total=service_total)
 
 
-def _arrivals(rng, rate_per_day, horizon_min):
-    prof = P.hourly_profile()
+def _arrivals(rng, rate_per_day, horizon_min, profile_power=1.0):
+    prof = P.hourly_profile(profile_power)
     lam_max = rate_per_day / P.MIN_PER_DAY * prof.max()
     n_cand = rng.poisson(lam_max * horizon_min * 1.0) + 50
     t = np.cumsum(rng.exponential(1.0 / lam_max, n_cand))
@@ -147,13 +151,12 @@ def generate(ed, rep: int, alphas=None) -> list:
     """Patient list for one ED type and replication."""
     rc = P.parameters()["run_control"]
     horizon = (P.v(rc["warmup_days"]) + P.v(rc["observation_days"]) + P.v(rc["max_cooldown_days"])) * P.MIN_PER_DAY
-    f = P.design()["factors"]
-    ss = seed_for(f["acuity"].index(ed.acuity), f["load"].index(ed.load),
-                  f["diagnostics"].index(ed.diagnostics), f["boarding"].index(ed.boarding), rep)
+    ss = seed_for(*ed.seed_parts, rep)
     s_arr, s_attr, s_pred = ss.spawn(3)
-    arr = _arrivals(np.random.default_rng(s_arr), ed.visits_per_day, horizon)
+    pt = ed.perturb or {}
+    arr = _arrivals(np.random.default_rng(s_arr), ed.visits_per_day, horizon, pt.get("profile_power", 1.0))
     n = len(arr)
-    at = _sample_attributes(np.random.default_rng(s_attr), n, ed.acuity, ed.diagnostics, ed.boarding)
+    at = _sample_attributes(np.random.default_rng(s_attr), n, list(ed.mix), ed.diag_shift, ed.board_mean, pt)
 
     # true codes
     ctas = at["ctas"]
@@ -169,6 +172,8 @@ def generate(ed, rep: int, alphas=None) -> list:
     if alphas is None:
         alphas = sorted(set(P.v(P.parameters()["prediction"]["alpha_sweep"])) | {P.v(P.parameters()["prediction"]["alpha_main"])})
     U = np.random.default_rng(s_pred).random((n, 5))
+    if pt.get("corr_pred"):
+        U[:, 1:] = U[:, :1]       # one draw for all attributes: prediction errors move together
     cms = confusion_matrices()
     attr_cols = (("service", 1, 5), ("admission", 2, 2), ("diagnostics", 3, 2), ("resource", 4, 4), ("consult", 5, 2))
     preds = {}

@@ -34,7 +34,7 @@ class QueueRule:
     name = "base"
     dynamic = False
 
-    def static_key(self, code, ctas, t_enter, seq):
+    def static_key(self, code, ctas, t_enter, seq, task=None):
         raise NotImplementedError
 
     def dyn_key(self, skey, ctas, now):
@@ -45,7 +45,7 @@ class FCFS(QueueRule):
     def __init__(self, name="FCFS"):
         self.name = name
 
-    def static_key(self, code, ctas, t_enter, seq):
+    def static_key(self, code, ctas, t_enter, seq, task=None):
         return (t_enter, seq)
 
 
@@ -53,7 +53,7 @@ class CTASPriority(QueueRule):
     def __init__(self, name="CTAS"):
         self.name = name
 
-    def static_key(self, code, ctas, t_enter, seq):
+    def static_key(self, code, ctas, t_enter, seq, task=None):
         return (t_enter, seq)
 
     def dyn_key(self, skey, ctas, now):
@@ -67,7 +67,7 @@ class CTASThen(QueueRule):
         self.name = name
         self.secondary = secondary
 
-    def static_key(self, code, ctas, t_enter, seq):
+    def static_key(self, code, ctas, t_enter, seq, task=None):
         if self.secondary == "short_service":
             k = -code[1]            # class 5 = very short is served first
         elif self.secondary == "discharge":
@@ -90,7 +90,7 @@ class APQ(QueueRule):
         self.name = name
         self.ub = _targets()
 
-    def static_key(self, code, ctas, t_enter, seq):
+    def static_key(self, code, ctas, t_enter, seq, task=None):
         return (t_enter, seq)
 
     def dyn_key(self, skey, ctas, now):
@@ -99,21 +99,25 @@ class APQ(QueueRule):
 
 class Similarity(QueueRule):
     """Higher similarity to the target code is served first; optional ageing term
-    adds `aging` per elapsed CTAS target time."""
+    adds `aging` per elapsed CTAS target time; optional `ra_bonus` is added to the score
+    of patients waiting for a physician reassessment (in-progress patients)."""
 
-    def __init__(self, name, weights, target, aging=0.0):
+    def __init__(self, name, weights, target, aging=0.0, ra_bonus=0.0):
         self.name = name
         self.weights = tuple(weights)
         self.target = tuple(target)
         self.aging = aging
+        self.ra_bonus = ra_bonus
         self.dynamic = aging > 0
         self.ub = _targets()
 
     def score(self, code):
         return similarity(code, self.target, self.weights)
 
-    def static_key(self, code, ctas, t_enter, seq):
+    def static_key(self, code, ctas, t_enter, seq, task=None):
         s = self.score(code)
+        if self.ra_bonus and task == "RA":
+            s = round(s + self.ra_bonus, ROUND)
         if self.aging:
             s = round(s - self.aging * t_enter / self.ub[ctas - 1], ROUND)
         return (-s, t_enter, seq)
@@ -138,7 +142,7 @@ def make_queue_rule(name: str, spec: dict | None = None) -> QueueRule:
     if kind == "ctas_then":
         return CTASThen(name, spec["secondary"])
     if kind == "similarity":
-        return Similarity(name, spec["weights"], spec["target"], spec.get("aging", 0.0))
+        return Similarity(name, spec["weights"], spec["target"], spec.get("aging", 0.0), spec.get("ra_bonus", 0.0))
     raise ValueError(kind)
 
 
@@ -168,17 +172,22 @@ class RoutePred(RoutingRule):
 
 
 class RouteSimilarity(RoutingRule):
-    def __init__(self, name, weights, target_main, target_second, ctas_floor=3):
+    """Second area if S_second - S_main > offset (offset 0: Proposition 3; a non-zero offset
+    moves the threshold away from the centre of the code ranges)."""
+
+    def __init__(self, name, weights, target_main, target_second, ctas_floor=3, offset=0.0):
         self.name = name
         self.weights = tuple(weights)
         self.tm = tuple(target_main)
         self.ts = tuple(target_second)
         self.floor = ctas_floor
+        self.offset = offset
 
     def to_second(self, ctas, code):
         if ctas < self.floor:
             return False
-        return similarity(code, self.ts, self.weights) > similarity(code, self.tm, self.weights)
+        d = round(similarity(code, self.ts, self.weights) - similarity(code, self.tm, self.weights), ROUND)
+        return d > self.offset
 
 
 def make_routing_rule(name: str, spec: dict | None = None) -> RoutingRule:
@@ -192,7 +201,7 @@ def make_routing_rule(name: str, spec: dict | None = None) -> RoutingRule:
         return RoutePred(name)
     if kind == "similarity":
         return RouteSimilarity(name, spec["weights"], spec["target_main"], spec["target_second"],
-                               spec.get("ctas_floor", 3))
+                               spec.get("ctas_floor", 3), spec.get("offset", 0.0))
     raise ValueError(kind)
 
 

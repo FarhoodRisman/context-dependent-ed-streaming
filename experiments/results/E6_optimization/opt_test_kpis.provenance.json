@@ -1,0 +1,39 @@
+{
+  "experiment": "E6_optimization",
+  "edsim_version": "1.0.0",
+  "git_commit": "d13229da9116e1a463d906a12811af0bde3ec696-dirty",
+  "config_sha256_16": "4f226acab83a7e71",
+  "base_seed": 20261107,
+  "warmup_days": 2,
+  "observation_days": 28,
+  "max_cooldown_days": 10,
+  "python": "3.13.18",
+  "date_utc": "2026-11-08T21:10:15+00:00",
+  "file": "opt_test_kpis.csv.gz",
+  "rows": 4,
+  "objectives": [
+    "access",
+    "balanced"
+  ],
+  "train_reps": [
+    1000,
+    1001,
+    1002
+  ],
+  "validation_reps": [
+    2000,
+    2001,
+    2002,
+    2003,
+    2004
+  ],
+  "cem": {
+    "iterations": 2,
+    "population": 4,
+    "elite": 2,
+    "smoothing": 0.7,
+    "sigma0": 1.0,
+    "sigma_floor": 0.05,
+    "shortlist": 2
+  }
+}

@@ -1,0 +1,132 @@
+[
+ {
+  "acuity": "tertiary",
+  "load": "low",
+  "config": "POOLED",
+  "objective": "access",
+  "queue": {
+   "kind": "similarity",
+   "weights": [
+    0.177887,
+    0.31403,
+    0.237509,
+    0.244864,
+    0.003686,
+    0.022024
+   ],
+   "target": [
+    1,
+    4,
+    1,
+    2,
+    1,
+    1
+   ],
+   "aging": 0.00148,
+   "ra_bonus": -0.083052
+  },
+  "routing": null,
+  "J_train": 0.37819034901752085,
+  "J_validation": 0.3587303856868085,
+  "shortlist_validation": [
+   0.3587303856868085,
+   0.36342268961780266
+  ],
+  "evaluations": 34,
+  "history": [
+   {
+    "iteration": 0,
+    "best_J": 0.3814258398298374,
+    "elite_mean_J": 0.3836864740324067,
+    "population_mean_J": 0.39109027223124254,
+    "sigma_mean": 0.6328904837852555
+   },
+   {
+    "iteration": 1,
+    "best_J": 0.37819034901752085,
+    "elite_mean_J": 0.38666857263909005,
+    "population_mean_J": 0.3914439866412568,
+    "sigma_mean": 0.4051997504278324
+   }
+  ]
+ },
+ {
+  "acuity": "tertiary",
+  "load": "low",
+  "config": "FASTTRACK",
+  "objective": "access",
+  "queue": {
+   "kind": "similarity",
+   "weights": [
+    0.4,
+    0.3,
+    0.1,
+    0.1,
+    0.05,
+    0.05
+   ],
+   "target": [
+    1,
+    5,
+    2,
+    2,
+    4,
+    2
+   ],
+   "aging": 0.001,
+   "ra_bonus": 0.0
+  },
+  "routing": {
+   "kind": "similarity",
+   "weights": [
+    0.4,
+    0.3,
+    0.1,
+    0.1,
+    0.05,
+    0.05
+   ],
+   "target_main": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "target_second": [
+    5,
+    5,
+    2,
+    2,
+    4,
+    2
+   ],
+   "ctas_floor": 3,
+   "offset": 0.0
+  },
+  "J_train": 0.3378834992933242,
+  "J_validation": 0.3783503700939872,
+  "shortlist_validation": [
+   0.3783503700939872,
+   0.3885218237503051
+  ],
+  "evaluations": 34,
+  "history": [
+   {
+    "iteration": 0,
+    "best_J": 0.3378834992933242,
+    "elite_mean_J": 0.3470234859815533,
+    "population_mean_J": 0.358378546548066,
+    "sigma_mean": 0.6030141577193368
+   },
+   {
+    "iteration": 1,
+    "best_J": 0.3557971045832384,
+    "elite_mean_J": 0.36392690702781755,
+    "population_mean_J": 0.37220263741954895,
+    "sigma_mean": 0.2896005665200132
+   }
+  ]
+ }
+]

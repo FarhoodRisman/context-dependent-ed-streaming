@@ -1,0 +1,64 @@
+{
+  "experiment": "E3_fidelity",
+  "edsim_version": "1.0.0",
+  "git_commit": "3f2a33e13eff86a5aa737a0408c9ebee21801a19",
+  "config_sha256_16": "4f226acab83a7e71",
+  "base_seed": 20261107,
+  "warmup_days": 2,
+  "observation_days": 28,
+  "max_cooldown_days": 10,
+  "python": "3.13.18",
+  "date_utc": "2026-11-08T01:55:02+00:00",
+  "file": "fidelity.csv.gz",
+  "rows": 315,
+  "replications": 15,
+  "ed_types": [
+    [
+      "tertiary",
+      "medium",
+      "FASTTRACK"
+    ],
+    [
+      "community",
+      "medium",
+      "FASTTRACK"
+    ],
+    [
+      "urgentcare",
+      "medium",
+      "FASTTRACK"
+    ]
+  ],
+  "queue_pairs": [
+    [
+      "SIMREP-CTAS",
+      "CTAS"
+    ],
+    [
+      "SIMREP-CTAS-SPT",
+      "CTAS-SPT"
+    ],
+    [
+      "SIMREP-CTAS-PD",
+      "CTAS-PD"
+    ],
+    [
+      "SIMREP-NEAR",
+      "CTAS-SPT"
+    ],
+    [
+      "SIM",
+      "CTAS-SPT"
+    ]
+  ],
+  "routing_pairs": [
+    [
+      "ROUTE-SIMREP-CTAS",
+      "STREAM-CTAS"
+    ],
+    [
+      "STREAM-SIM",
+      "STREAM-PRED"
+    ]
+  ]
+}

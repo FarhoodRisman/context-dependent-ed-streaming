@@ -1,0 +1,157 @@
+[
+  {
+    "check": "E2: every observed patient departed",
+    "pass": true,
+    "detail": "rows with unfinished patients: 0"
+  },
+  {
+    "check": "E2: breach rates in [0,1]",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E2: utilisation in [0,1]",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E2: overall mean LOS within CTAS group means",
+    "pass": true,
+    "detail": "violations: 0"
+  },
+  {
+    "check": "E2: overall mean LOS within disposition group means",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E2: overall mean door-to-physician within CTAS group means",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E2: no duplicate run keys",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E4: every observed patient departed",
+    "pass": true,
+    "detail": "rows with unfinished patients: 0"
+  },
+  {
+    "check": "E4: breach rates in [0,1]",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E4: utilisation in [0,1]",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E4: overall mean LOS within CTAS group means",
+    "pass": true,
+    "detail": "violations: 0"
+  },
+  {
+    "check": "E4: overall mean LOS within disposition group means",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E4: overall mean door-to-physician within CTAS group means",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E4: no duplicate run keys",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E5: every observed patient departed",
+    "pass": true,
+    "detail": "rows with unfinished patients: 0"
+  },
+  {
+    "check": "E5: breach rates in [0,1]",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E5: utilisation in [0,1]",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E5: overall mean LOS within CTAS group means",
+    "pass": true,
+    "detail": "violations: 0"
+  },
+  {
+    "check": "E5: overall mean LOS within disposition group means",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E5: overall mean door-to-physician within CTAS group means",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E5: no duplicate run keys",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E1: every observed patient departed",
+    "pass": true,
+    "detail": "rows with unfinished patients: 0"
+  },
+  {
+    "check": "E1: breach rates in [0,1]",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E1: utilisation in [0,1]",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E1: overall mean LOS within CTAS group means",
+    "pass": true,
+    "detail": "violations: 0"
+  },
+  {
+    "check": "E1: overall mean LOS within disposition group means",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E1: overall mean door-to-physician within CTAS group means",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E1: no duplicate run keys",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "check": "E2 vs E4 (medium load, alpha = 1): identical results for shared runs",
+    "pass": true,
+    "detail": "shared runs: 1620, max abs difference: 0.0"
+  },
+  {
+    "check": "E2 vs E1 (community pooled): identical results for shared runs",
+    "pass": true,
+    "detail": "shared runs: 75, max abs difference: 0.0"
+  },
+  {
+    "check": "E3 reference rules vs E2: identical LOS for shared runs",
+    "pass": true,
+    "detail": "shared runs: 180, max abs difference: 0.0"
+  }
+]

@@ -665,7 +665,7 @@ def sensitivity_outputs(best_core):
         macro(f"Sens{nm}UtilMax", float(u.max()), "{:.2f}")
     # does the best queue rule under high boarding shift? count by queue
     hb = t[(t.variant == "high|typical") & (t.kpi == "ratp")]
-    macro("SensHighBoardingBestQueues", ", ".join(sorted(hb.best_queue.unique())), "{}")
+    macro("SensHighBoardingBestQueues", " and ".join(sorted(hb.best_queue.unique())), "{}")
     return t
 
 
@@ -764,6 +764,7 @@ def headline_macros(best, m, e2):
     worst2 = two.loc[two.groupby(TYPE).los_all_mean.idxmax()]
     macro("NWorstLosPredStream", int((worst2.routing == "STREAM-PRED").sum()), "{:.0f}")
     macro("NTwoAreaTypes", two[TYPE].drop_duplicates().shape[0], "{:.0f}")
+    macro("NMediumTypes", m[m.load == P.design()["alpha_ed_types_load"]][TYPE].drop_duplicates().shape[0], "{:.0f}")
     ov = m[m.overloaded]
     macro("NOverloadedCombos", len(ov), "{:.0f}")
     macro("NOverloadedPred", int((ov.routing == "STREAM-PRED").sum()), "{:.0f}")

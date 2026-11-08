@@ -1,0 +1,16 @@
+{
+  "experiment": "E1_validation",
+  "edsim_version": "1.0.0",
+  "git_commit": "3f2a33e13eff86a5aa737a0408c9ebee21801a19",
+  "config_sha256_16": "4f226acab83a7e71",
+  "base_seed": 20261107,
+  "warmup_days": 2,
+  "observation_days": 28,
+  "max_cooldown_days": 10,
+  "python": "3.13.18",
+  "date_utc": "2026-11-08T01:53:13+00:00",
+  "file": "pathway_shares.csv.gz",
+  "rows": 11,
+  "replications": 25,
+  "ed_type": "community|medium|POOLED"
+}

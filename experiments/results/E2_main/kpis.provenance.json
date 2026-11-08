@@ -1,0 +1,18 @@
+{
+  "experiment": "E2_main",
+  "edsim_version": "1.0.0",
+  "git_commit": "3f2a33e13eff86a5aa737a0408c9ebee21801a19",
+  "config_sha256_16": "4f226acab83a7e71",
+  "base_seed": 20261107,
+  "warmup_days": 2,
+  "observation_days": 28,
+  "max_cooldown_days": 10,
+  "python": "3.13.18",
+  "date_utc": "2026-11-08T02:25:40+00:00",
+  "file": "kpis.csv.gz",
+  "rows": 11025,
+  "replications": 25,
+  "alpha": 1.0,
+  "ed_types": 27,
+  "design": "acuity x load x config; boarding low; diagnostics typical"
+}

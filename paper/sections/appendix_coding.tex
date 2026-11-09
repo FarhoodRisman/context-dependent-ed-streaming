@@ -7,7 +7,7 @@ This appendix describes how the six-attribute code of a patient is built, how pr
 
 Table~\ref{tab:coding} lists the attributes. Attribute A is the CTAS level assigned at triage and is observed without error. Attributes B to F describe the patient's expected course in the ED; in practice they would come from a prediction model at triage, and in the simulation they are predicted from the patient's true attributes as described below.
 
-\begin{table}[!ht]
+\begin{table}[!htbp]
 \centering
 \caption{Coding scheme. Lower codes indicate higher acuity, longer service, admission, diagnostic need, heavier resource use or consultation.}
 \label{tab:coding}
@@ -30,7 +30,7 @@ F: Consultation & 1 yes, 2 no & Consultation (DR) step in the pathway. \\
 
 For each predicted attribute with $n$ classes, a reference confusion matrix $M_{\text{ref}}$ has the reference accuracy on its diagonal; the remaining probability of row $i$ is spread over the other classes $j$ in proportion to $\delta^{|i-j|-1}$ with $\delta=\ErrDecay$, so that errors fall mostly on neighbouring classes. Table~\ref{tab:confusion} shows the two ordinal matrices. The matrix used at error level $\alpha$ is $M(\alpha)=I+\alpha(M_{\text{ref}}-I)$, which is a valid stochastic matrix for every $\alpha$ for which its diagonal is non-negative. A patient's predicted class is obtained by inverse-transform sampling from row $p$ of $M(\alpha)$ with one uniform random number per patient and attribute; because the same number is used at every $\alpha$, the predicted class changes monotonically from the true class as $\alpha$ grows, and comparisons across $\alpha$ use common random numbers.
 
-\begin{table}[!ht]
+\begin{table}[!htbp]
 \centering
 \caption{Reference confusion matrices ($\alpha=1$) for the two ordinal predicted attributes. Rows: true class; columns: predicted class.}
 \label{tab:confusion}
@@ -46,7 +46,7 @@ For a code $p$, a target code $q$ and weights $w\geq 0$, the score is (\mref{eq:
 
 Table~\ref{tab:example} scores four patients. Under the SIM rule (target $1$-$5$-$2$-$2$-$4$-$2$, weights \SimWA, \SimWB, \SimWC, \SimWD, \SimWE, \SimWF), patient P3, a CTAS~3 patient expected to be discharged quickly without tests, has score \WexPThreeSim{} and is ranked \WexPThreeRankSim{}, ahead of the CTAS~2 patients P1 and P2. Under the exact representation of CTAS-SPT ($w_A=\RepSptWA$, $w_B=\RepSptWB$), both CTAS~2 patients are ranked first, and among them the patient with the shorter expected service (P2) comes first, as Proposition~\mref{prop:lex} requires. The last two columns show similarity routing: the difference $S_{\text{second}}-S_{\text{main}}$ is positive for P3 and P4, which go to the second area; P1 and P2 are CTAS~2 and stay in the Main area by the safety rule.
 
-\begin{table}[!ht]
+\begin{table}[!htbp]
 \centering
 \caption{Worked example: scores and ranks of four patients under SIM and under the exact similarity representation of CTAS-SPT, and similarity routing (values computed with the model code).}
 \label{tab:example}

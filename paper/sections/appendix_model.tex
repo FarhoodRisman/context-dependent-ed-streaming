@@ -5,7 +5,7 @@
 
 Table~\ref{tab:inputs} lists the activity durations with their sources; all durations are lognormal with the stated mean and coefficient of variation (CV) and are sampled once per patient, so they do not depend on the policy. The acuity mixes, admission probabilities and CTAS targets are given in Table~\mref{tab:parameters}. Fig.~\ref{fig:profile} shows the hourly arrival profile (normalized to mean one; it ranges from \ProfileMin{} to \ProfileMax) and the boundaries of the three physician shifts.
 
-\begin{table}[!ht]
+\begin{table}[!htbp]
 \centering
 \caption{Activity durations (minutes; lognormal) and sources. ``Assumption'' marks values without a published source.}
 \label{tab:inputs}
@@ -13,7 +13,7 @@ Table~\ref{tab:inputs} lists the activity durations with their sources; all dura
 \begin{adjustbox}{max width=\linewidth}\input{tables/tab_inputs}\end{adjustbox}
 \end{table}
 
-\begin{figure}[!ht]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.8\columnwidth]{figures/fig_arrival_profile.pdf}
 \caption{Hourly arrival profile (relative to the daily mean). Dotted lines: start of the night, day and evening physician shifts.}
@@ -24,7 +24,7 @@ Table~\ref{tab:inputs} lists the activity durations with their sources; all dura
 
 Table~\ref{tab:pathways} lists the \NPathways{} published pathways \cite{Rismanchian2023_PatientJourney} with their published shares and the probability that a patient of a given CTAS level and disposition follows each of them in the model (typical diagnostic intensity). The probability of pathway $j$ for a patient of CTAS level $l$ with disposition $a$ is proportional to $f_j\exp\{(\theta_l+s)k_j\}$ over the pathways that end in $a$, where $f_j$ is the published frequency, $k_j$ the number of diagnostic and consultation steps, $\theta_l$ the CTAS tilt (from \TiltOneAll{} for CTAS~1 to \TiltFiveAll{} for CTAS~5) and $s$ the diagnostic-intensity shift.
 
-\begin{table}[!ht]
+\begin{table}[!htbp]
 \centering
 \caption{Published pathways and model probabilities by CTAS level, given the disposition in which the pathway ends (typical diagnostic intensity). TR triage, RG registration, AS physician assessment, LB laboratory, XR X-ray, DR consultation, DD discharge, AD admission.}
 \label{tab:pathways}
@@ -40,7 +40,7 @@ c_s=\big\lceil\lambda_s\omega^{\text{hi}}/\rho\big\rceil+\big\lceil\lambda_s\ome
 \end{equation}
 and the second term is the fast-track team in the fast-track configuration. Treatment spaces are sized in the same way from the expected service-only holding time with $\rho=\SpaceSizing$, at the arrival rate that gives the medium load, and the CTAS~4--5 share forms the second area in the two-area configurations. Diagnostic resources are sized for an offered load of \DiagTarget{} and triage nurses for \TriageTarget{} at the busiest hour of the high load level. Finally the arrival rate is scaled so that the offered load of the busiest physician pool equals the load level (for the fast-track configuration, the larger of the Main and fast-track offered loads under CTAS streaming). Sensitivity and robustness experiments change demand-side inputs but keep these capacities.
 
-\begin{table*}[!ht]
+\begin{table*}[!htbp]
 \centering
 \caption{Visits per day by load level, treatment spaces and physicians per shift (night/day/evening) for each acuity mix and configuration. Values in parentheses are the second area's share.}
 \label{tab:capacity}

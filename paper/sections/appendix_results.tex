@@ -8,7 +8,7 @@ This appendix reports the detailed results behind the summaries in Section~\mref
 
 Table~\ref{tab:face} gives the time intervals of the community, pooled ED under the default policy at the three load levels, which Section~\mref{sec:res:vv} compares with published Canadian values.
 
-\begin{table}[!ht]
+\begin{table}[!htbp]
 \centering
 \caption{Face validity: community ED, pooled configuration, default policy, \Reps{} replications per load level.}
 \label{tab:face}
@@ -30,7 +30,7 @@ Table~\ref{tab:best} lists, for every core ED type, the default policy and the b
 \begin{adjustbox}{max width=\linewidth}\input{tables/tab_best}\end{adjustbox}
 \end{table*}
 
-\begin{table*}[!ht]
+\begin{table*}[!htbp]
 \centering
 \caption{Performance by queue rule in the community ED at high load (pooled; \Reps{} replications). Second line of each measure: paired difference from CTAS; bold if the 95\% confidence interval excludes zero.}
 \label{tab:kpis}
@@ -38,7 +38,7 @@ Table~\ref{tab:best} lists, for every core ED type, the default policy and the b
 \begin{adjustbox}{max width=\linewidth}\input{tables/tab_kpis_community_high_pooled}\end{adjustbox}
 \end{table*}
 
-\begin{figure}[!ht]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.95\columnwidth]{figures/fig_tails.pdf}
 \caption{95th percentile of door-to-physician time by CTAS level and queue rule (community ED, high load, pooled; log scale).}
@@ -68,7 +68,7 @@ RATP weights the breach rate of CTAS level $l$ by $1/l$. Table~\ref{tab:altw} re
 
 Table~\ref{tab:sens} reports the sensitivity analysis summarized in Section~\mref{sec:res:sens}. The supplement contains the results for every policy and ED type, and those of the value-of-prediction experiment.
 
-\begin{table}[!ht]
+\begin{table}[!htbp]
 \centering
 \caption{Sensitivity (\NMediumTypes{} medium-load ED types, \RepsSecondary{} replications): number of ED types in which the core best policy is still best, and mean (maximum) regret of keeping the core best policy.}
 \label{tab:sens}
@@ -82,14 +82,14 @@ Table~\ref{tab:sens} reports the sensitivity analysis summarized in Section~\mre
 
 Fig.~\ref{fig:pareto} shows mean LOS against RATP for all policies in the community ED at high load, and Table~\ref{tab:vop} the gain of the best prediction-based policy over the best policy without predictions in the medium-load ED types (Sections~\mref{sec:res:mech} and~\mref{sec:res:vop}).
 
-\begin{figure}[!ht]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_pareto.pdf}
 \caption{Mean LOS against RATP for all policies in the community ED at high load. Grey line: policies not dominated on both measures (labelled). Overloaded policies (Main-area utilization $\geq$ \OverloadThreshold) are omitted.}
 \label{fig:pareto}
 \end{figure}
 
-\begin{table*}[!ht]
+\begin{table*}[!htbp]
 \centering
 \caption{Gain of the best prediction-based policy over the best policy without predictions (medium load), with perfect information ($\alpha=0$) and reference accuracy ($\alpha=1$), and the largest $\alpha$ tested at which it is still better ($\geq$: better at every $\alpha$ tested).}
 \label{tab:vop}
@@ -126,7 +126,7 @@ Table~\ref{tab:optfull} gives the test-replication objective of the default poli
 \label{fig:cem}
 \end{figure}
 
-\begin{table}[!ht]
+\begin{table}[!htbp]
 \centering
 \caption{Change in the objective (\%) when one parameter of the optimized rule is changed (E6b, \NLeverReps{} test replications); negative is better. Better/worse: ED types with a change of more than 1\% in either direction.}
 \label{tab:levers}
@@ -134,7 +134,7 @@ Table~\ref{tab:optfull} gives the test-replication objective of the default poli
 \begin{adjustbox}{max width=\linewidth}\input{tables/tab_levers}\end{adjustbox}
 \end{table}
 
-\begin{figure*}[!ht]
+\begin{figure*}[!htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/fig_transfer.pdf}
 \caption{Transfer regret (\%) of optimized rules (\NTransferReps{} test replications). Row: ED type for which the rule was optimized; column: ED type to which it is applied; the diagonal is zero by definition. Top: access objective; bottom: balanced objective.}

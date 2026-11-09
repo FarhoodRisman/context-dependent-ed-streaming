@@ -1,5 +1,12 @@
+% Each appendix keeps its own tables and figures: \FloatBarrier flushes pending floats
+% before the next appendix starts (and before the references in main.tex).
 \input{sections/appendix_coding}
+\FloatBarrier
 \input{sections/appendix_proofs}
+\FloatBarrier
 \input{sections/appendix_model}
+\FloatBarrier
 \input{sections/appendix_algorithms}
+\FloatBarrier
 \input{sections/appendix_results}
+\FloatBarrier

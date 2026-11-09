@@ -3,7 +3,7 @@
 
 This appendix gives the main algorithms in pseudo-code. Algorithm~\ref{alg:engine} is the event loop of the simulation, Algorithm~\ref{alg:queue} the queue used for every resource, and Algorithm~\ref{alg:fidelity} the decision-level fidelity measurement. The cross-entropy optimization is given in Algorithm~\mref{alg:cem} in Section~\mref{sec:optimization}.
 
-\begin{algorithm}[!ht]
+\begin{algorithm}[H]
 \caption{Event loop of the ED simulation}
 \label{alg:engine}
 \begin{algorithmic}[1]
@@ -27,7 +27,7 @@ This appendix gives the main algorithms in pseudo-code. Algorithm~\ref{alg:engin
 \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}[!ht]
+\begin{algorithm}[H]
 \caption{Queue ordered by a queue rule}
 \label{alg:queue}
 \begin{algorithmic}[1]
@@ -41,7 +41,7 @@ This appendix gives the main algorithms in pseudo-code. Algorithm~\ref{alg:engin
 
 Within one CTAS level the static key gives the same order as the effective priority at any time, because the ageing rate $\gamma/T_l$ is common to the level; only the heads of the five levels need to be compared at a dispatch. The test suite checks that this gives the same choice as a full scan of the queue.
 
-\begin{algorithm}[!ht]
+\begin{algorithm}[H]
 \caption{Decision-level fidelity of a similarity rule $\sigma$ to a reference rule $\rho$}
 \label{alg:fidelity}
 \begin{algorithmic}[1]

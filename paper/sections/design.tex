@@ -17,7 +17,7 @@ where $W$ is door-to-physician time and $T_l$ the target. RATP weights the share
 \begin{itemize}
 \item \textbf{E1, verification and validation}: transition frequencies and time intervals of the community, pooled ED compared with the generator, the published pathways and Canadian aggregates.
 \item \textbf{E2, main experiment}: all \NEdTypes{} core ED types, all policies, reference prediction accuracy ($\alpha=1$), \Reps{} replications.
-\item \textbf{E3, fidelity}: the exact similarity representations of Section~\ref{sec:propositions}, two settings that violate (\ref{eq:lexcond}) (SIM, and $w_A=w_B=\NearW$) and two routing pairs, each run beside its reference rule in the three medium-load fast-track EDs, \RepsSecondary{} replications.
+\item \textbf{E3, fidelity}: the exact similarity-index representations of Section~\ref{sec:propositions}, two settings that violate (\ref{eq:lexcond}) (SIM, and $w_A=w_B=\NearW$) and two routing pairs, each run beside its reference rule in the three medium-load fast-track EDs, \RepsSecondary{} replications.
 \item \textbf{E4, value of prediction accuracy}: the nine medium-load ED types; every policy that uses predictions is run at $\alpha\in\{0,\AlphaStep,\dots,\AlphaMax\}$; \RepsSecondary{} replications.
 \item \textbf{E5, sensitivity}: the nine medium-load ED types with high boarding, light diagnostics or heavy diagnostics (one at a time, capacities unchanged), all policies, \RepsSecondary{} replications.
 \item \textbf{E6, optimization}: the cross-entropy search of Section~\ref{sec:optimization} for each of the \NEdTypes{} core ED types and both objectives; the selected policy is evaluated on the \Reps{} test replications of E2. In E6b each optimized rule is re-run with one parameter changed (fixed ageing rates, no reassessment bonus, no routing offset), \NLeverReps{} test replications.
@@ -28,7 +28,7 @@ where $W$ is door-to-physician time and $T_l$ the target. RATP weights the share
 
 Two further analyses use the E2 output. A bootstrap over replications (\BootB{} resamples) estimates, for each ED type, the probability that the policy with the lowest mean remains the best, which shows how firmly each recommendation is identified. The best policies are also recomputed with other acuity weights in RATP (Appendix~\aref{app:res:altw}).
 
-In E3 the engine runs the similarity rule and records, at every dispatch, whether the reference rule would have chosen the same patient; the reference rule is then run on the same patient list and the event logs are compared (Appendix~\aref{app:model}).
+In E3 the engine runs the similarity index and records, at every dispatch, whether the reference rule would have chosen the same patient; the reference rule is then run on the same patient list and the event logs are compared (Appendix~\aref{app:model}).
 
 \subsection{Run Control and Statistical Analysis}
 

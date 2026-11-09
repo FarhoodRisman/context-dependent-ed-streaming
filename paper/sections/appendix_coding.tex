@@ -48,7 +48,7 @@ Table~\ref{tab:example} scores four patients. Under the SIM rule (target $1$-$5$
 
 \begin{table}[!htbp]
 \centering
-\caption{Worked example: scores and ranks of four patients under SIM and under the exact similarity representation of CTAS-SPT, and similarity routing (values computed with the model code).}
+\caption{Worked example: scores and ranks of four patients under SIM and under the exact similarity-index representation of CTAS-SPT, and similarity routing (values computed with the model code).}
 \label{tab:example}
 \footnotesize
 \begin{adjustbox}{max width=\linewidth}\input{tables/tab_worked_example}\end{adjustbox}
@@ -56,4 +56,4 @@ Table~\ref{tab:example} scores four patients. Under the SIM rule (target $1$-$5$
 
 \subsection{Why the Weights Need to Be Checked}
 
-The worked example shows how a weighting that is read as ``acuity first'' can rank a less urgent patient first. With weights $(\SimWA,\SimWB,\dots)$ the largest possible gain from one CTAS level is $\SimWA/4$, while the other attributes together can add up to the sum of their weights. Proposition~\mref{prop:lex} turns this observation into a condition that can be checked before a scoring rule is deployed, and Section~\mref{sec:optimization} shows how weights can instead be chosen by simulation-based optimization.
+The worked example shows how a weighting that is read as ``acuity first'' can rank a less urgent patient first. With weights $(\SimWA,\SimWB,\dots)$ the largest possible gain from one CTAS level is $\SimWA/4$, while the other attributes together can add up to the sum of their weights. Proposition~\mref{prop:lex} turns this observation into a condition that can be checked before a priority index is deployed, and Section~\mref{sec:optimization} shows how weights can instead be chosen by simulation-based optimization.

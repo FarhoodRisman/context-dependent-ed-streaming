@@ -28,7 +28,7 @@ Fig.~\ref{fig:framework} shows the structure of the study. For each ED type and 
 \draw[->] (an.south) to[out=-110, in=-70] node[below, font=\scriptsize]{tuning of rule parameters} (sim.south);
 \end{tikzpicture}
 \end{adjustbox}
-\caption{Structure of the study. The lower arrow indicates that the tuning of scoring rules evaluates candidate rules by repeated simulation.}
+\caption{Structure of the study. The lower arrow indicates that the tuning of priority indices evaluates candidate rules by repeated simulation.}
 \label{fig:framework}
 \end{figure*}
 
@@ -101,20 +101,20 @@ A policy combines a queue rule and, in the two-area configurations, a routing ru
 \item \textbf{APQ}: accumulating priority, equal to the elapsed wait divided by the CTAS target time; the patient with the largest value is served \cite{StanfordTaylorZiedins2014_APQ}.
 \item \textbf{CTAS-SPT}: CTAS priority, then shortest predicted service (highest service class) within a level.
 \item \textbf{CTAS-PD}: CTAS priority, then predicted discharge first within a level.
-\item \textbf{SIM}: a similarity rule (defined below) with target code $1$-$5$-$2$-$2$-$4$-$2$ and weights (\SimWA, \SimWB, \SimWC, \SimWD, \SimWE, \SimWF), which expresses ``acuity first, then quick and simple patients''; these values are a judgement-based setting of the kind used in practice \cite{GT-in-ED_HCMS2016}, and Section~\ref{sec:optimization} replaces them by optimized values.
+\item \textbf{SIM}: a similarity index (defined below) with target code $1$-$5$-$2$-$2$-$4$-$2$ and weights (\SimWA, \SimWB, \SimWC, \SimWD, \SimWE, \SimWF), which expresses ``acuity first, then quick and simple patients''; these values are a judgement-based setting of the kind used in practice \cite{GT-in-ED_HCMS2016}, and Section~\ref{sec:optimization} replaces them by optimized values.
 \item \textbf{SIM-AGE}: SIM plus an ageing term of \SimAging{} per elapsed CTAS target time, which lets long-waiting patients move up.
 \end{itemize}
 Three routing rules decide which patients go to the second area: \textbf{CTAS streaming} (C) sends CTAS~4--5 patients; \textbf{prediction streaming} (P) sends CTAS~3--5 patients with predicted discharge and predicted service class 4 or 5; \textbf{similarity routing} (S) sends a CTAS~3--5 patient to the area whose target code is more similar to the patient's code (Main target $1$-$1$-$1$-$1$-$1$-$1$, second-area target $5$-$5$-$2$-$2$-$4$-$2$; ties to Main). A policy is written as queue rule/routing rule, for example CTAS-SPT/C. The pooled configuration has \NQueueRules{} policies and the two-area configurations \NPoliciesTwoArea. Two rules apply to all policies. CTAS~1 patients are served first at every queue. Ties are broken explicitly: first by the time the patient joined the queue, then by patient identifier; similarity scores are rounded to $10^{-9}$ before comparison so that equal scores tie exactly. We refer to CTAS/C as the \emph{default} policy because it reflects common practice.
 
-\subsection{Fidelity of the Similarity Representation}
+\subsection{The Similarity-Based Priority Index and Its Fidelity}
 \label{sec:propositions}
 
-Let $p=(p_1,\dots,p_K)$ be a patient code with $p_k\in\{1,\dots,n_k\}$, $R_k=n_k-1$ the range of attribute $k$, $q$ a target code and $w\geq 0$ a weight vector. The weighted similarity of Offodile \cite{OFFODILE1990} is
+A priority index assigns each waiting patient a number computed from the patient's own attributes and serves the patient with the largest number. The similarity-based priority index used here needs only the coded triage attributes, a weighted sum and a sort, and its weights can be read directly, so it can be configured in an ED information system without optimization at run time. Let $p=(p_1,\dots,p_K)$ be a patient code with $p_k\in\{1,\dots,n_k\}$, $R_k=n_k-1$ the range of attribute $k$, $q$ a target code and $w\geq 0$ a weight vector. The weighted similarity of Offodile \cite{OFFODILE1990} is
 \begin{equation}
 S(p) = \sum_{k=1}^{K} w_k\left(1-\frac{|p_k-q_k|}{R_k}\right).
 \label{eq:sim}
 \end{equation}
-A similarity queue rule serves the patient with the largest $S$, with the safety and tie rules above. The following results describe when such a rule is a classical rule.
+The similarity index serves the patient with the largest $S$, with the safety and tie rules above. The following results describe when it reproduces a classical rule.
 
 \begin{proposition}[Linear index]
 \label{prop:linear}
@@ -129,11 +129,11 @@ Let all weighted targets lie at an end of their ranges and order the attributes 
 \frac{w_k}{R_k} > \sum_{j>k} w_j \quad \text{for every } k \text{ with } w_k>0,
 \label{eq:lexcond}
 \end{equation}
-then the similarity rule orders patients lexicographically by $(|p_1-q_1|,\dots,|p_K-q_K|)$, with first-come-first-served ties. If (\ref{eq:lexcond}) fails for some $k$ and all code combinations can occur, there exist two patients whom the similarity rule does not order lexicographically.
+then the similarity index orders patients lexicographically by $(|p_1-q_1|,\dots,|p_K-q_K|)$, with first-come-first-served ties. If (\ref{eq:lexcond}) fails for some $k$ and all code combinations can occur, there exist two patients whom the similarity index does not order lexicographically.
 \end{proposition}
 
 
-Proposition~\ref{prop:lex} gives exact similarity representations of three classical rules. Weights $(1,0,\dots,0)$ give strict CTAS priority. Weights with $w_A/4>w_B$ and target $q_B=5$ give CTAS-SPT; we use $w_A=\RepSptWA$, $w_B=\RepSptWB$. Weights with $w_A/4>w_C$ and $q_C=2$ give CTAS-PD. The SIM weights do not satisfy (\ref{eq:lexcond}): $w_A/R_A=\SimWA/4$ is smaller than the sum of the other weights. Although SIM is often read as ``acuity first, then quick patients'', Proposition~\ref{prop:lex} shows that it is not CTAS-SPT; the experiments in Section~\ref{sec:results} measure how far it is from it.
+Proposition~\ref{prop:lex} gives exact similarity-index representations of three classical rules. Weights $(1,0,\dots,0)$ give strict CTAS priority. Weights with $w_A/4>w_B$ and target $q_B=5$ give CTAS-SPT; we use $w_A=\RepSptWA$, $w_B=\RepSptWB$. Weights with $w_A/4>w_C$ and $q_C=2$ give CTAS-PD. The SIM weights do not satisfy (\ref{eq:lexcond}): $w_A/R_A=\SimWA/4$ is smaller than the sum of the other weights. Although SIM is often read as ``acuity first, then quick patients'', Proposition~\ref{prop:lex} shows that it is not CTAS-SPT; the experiments in Section~\ref{sec:results} measure how far it is from it.
 
 \begin{proposition}[Two-target routing]
 \label{prop:route}
@@ -145,4 +145,4 @@ with $\sigma_k=\pm 1$, so routing is a linear threshold rule whose boundary pass
 \end{proposition}
 
 
-Proofs are given in Appendix~\aref{app:proofs}, which adds two results. Proposition~4 shows that prediction streaming becomes representable when the routing rule compares $S_{\text{second}}-S_{\text{main}}$ with an offset $b$ instead of zero: with weights on service class and admission only, the rule equals prediction streaming if and only if $w_B<4w_C$ and $\max(w_C,w_B-w_C)\le b<w_C+w_B/2$. Proposition~5 notes that with all weights zero every score ties and the rule is FCFS, and with all weights zero and an ageing term SIM-AGE is APQ. The similarity rules with ageing and offset therefore contain FCFS, CTAS, CTAS-SPT, CTAS-PD, APQ and all three routing rules as special cases, but only under the stated conditions. We check the propositions by exhaustive enumeration of codes in the test suite and measure fidelity in the experiments.
+Proofs are given in Appendix~\aref{app:proofs}, which adds two results. Proposition~4 shows that prediction streaming becomes representable when the routing rule compares $S_{\text{second}}-S_{\text{main}}$ with an offset $b$ instead of zero: with weights on service class and admission only, the rule equals prediction streaming if and only if $w_B<4w_C$ and $\max(w_C,w_B-w_C)\le b<w_C+w_B/2$. Proposition~5 notes that with all weights zero every score ties and the rule is FCFS, and with all weights zero and an ageing term SIM-AGE is APQ. The similarity indices with ageing and offset therefore contain FCFS, CTAS, CTAS-SPT, CTAS-PD, APQ and all three routing rules as special cases, but only under the stated conditions. We check the propositions by exhaustive enumeration of codes in the test suite and measure fidelity in the experiments.

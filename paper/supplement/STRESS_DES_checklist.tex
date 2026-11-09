@@ -24,9 +24,9 @@ This checklist follows the STRESS guidelines for discrete-event simulation (Monk
 \midrule
 \endhead
 \multicolumn{3}{@{}l}{\textbf{1. Objectives}}\\
-1.1 & Purpose of the model & Compare patient-streaming policies (queue rule and routing rule) across ED types defined by acuity mix, load and configuration; measure the regret of one-size-fits-all policies; measure the value of prediction accuracy; test whether similarity-based rules apply the policies they represent; optimize similarity rules per ED type and test their transfer (Sec.~I). \\
+1.1 & Purpose of the model & Compare patient-streaming policies (queue rule and routing rule) across ED types defined by acuity mix, load and configuration; measure the regret of one-size-fits-all policies; measure the value of prediction accuracy; test whether similarity-based rules apply the policies they represent; optimize similarity indices per ED type and test their transfer (Sec.~I). \\
 1.2 & Model outputs & Door-to-triage, time to treatment space, door-to-physician time, LOS (discharged, admitted), boarding time; percentiles by CTAS level; PTP by CTAS level, RATP, AWT; throughput; utilization of every resource; waits at every stage (Sec.~V-A). \\
-1.3 & Experimentation aims & E1 verification and validation; E2 \NEdTypes{} ED types $\times$ all policies; E3 fidelity; E4 prediction-error sweep; E5 sensitivity to boarding and diagnostic intensity; E6 cross-entropy optimization of similarity rules (training, validation and test replications kept apart), E6b lever check; E7 transfer of optimized rules; E8 misspecified inputs; E9 \NOosTypes{} out-of-sample ED types (Sec.~IV, V-B). \\
+1.3 & Experimentation aims & E1 verification and validation; E2 \NEdTypes{} ED types $\times$ all policies; E3 fidelity; E4 prediction-error sweep; E5 sensitivity to boarding and diagnostic intensity; E6 cross-entropy optimization of similarity indices (training, validation and test replications kept apart), E6b lever check; E7 transfer of optimized rules; E8 misspecified inputs; E9 \NOosTypes{} out-of-sample ED types (Sec.~IV, V-B). \\
 \midrule
 \multicolumn{3}{@{}l}{\textbf{2. Logic}}\\
 2.1 & Base model overview & Figs.~1--2: arrival, triage, registration, routing, treatment space, physician initial assessment, pathway steps, reassessment, decision, discharge or boarding (Sec.~III-B). \\

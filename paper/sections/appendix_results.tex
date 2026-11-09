@@ -98,7 +98,7 @@ Fig.~\ref{fig:pareto} shows mean LOS against RATP for all policies in the commun
 \begin{adjustbox}{max width=\linewidth}\input{tables/tab_value_of_prediction}\end{adjustbox}
 \end{table*}
 
-\subsection{Optimized Similarity Rules: Details}
+\subsection{Optimized Similarity Indices: Details}
 \label{app:res:opt}
 
 Table~\ref{tab:optfull} gives the test-replication objective of the default policy, the best fixed policy and the optimized similarity policy for every ED type. The best fixed policy is the one with the lowest mean objective on the same test replications, so the comparison is conservative for the optimized rule: the fixed policy is selected with knowledge of the test outcomes, the optimized rule is not. Fig.~\ref{fig:optparamsaccess} shows the parameters of the rules optimized for the access objective (Fig.~\mref{fig:optparams} in the main text shows the balanced objective) and Fig.~\ref{fig:cem} the progress of the search. On average, the training objective of the selected rule was \OptAccessTrainOptimism\% (access) and \OptBalancedTrainOptimism\% (balanced) away from its test value and the validation objective \OptAccessValOptimism\% and \OptBalancedValOptimism\%; negative values mean the search replications were more favourable than the test replications. Each search used about \CemEvalsPerType{} simulation runs per ED type and objective. Table~\ref{tab:levers} gives the lever check of experiment E6b and Fig.~\ref{fig:transfer} the transfer regret of every pair of ED types.
@@ -115,7 +115,7 @@ Table~\ref{tab:optfull} gives the test-replication objective of the default poli
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_opt_params_access.pdf}
-\caption{Parameters of the similarity rules optimized for the access objective. Rows: ED types, with the optimized target code $q_A$--$q_F$ in brackets. Columns: queue weights, ageing $\gamma$, reassessment bonus $\beta$, routing weights and routing offset $b$ (two-area EDs only).}
+\caption{Parameters of the similarity indices optimized for the access objective. Rows: ED types, with the optimized target code $q_A$--$q_F$ in brackets. Columns: queue weights, ageing $\gamma$, reassessment bonus $\beta$, routing weights and routing offset $b$ (two-area EDs only).}
 \label{fig:optparamsaccess}
 \end{figure*}
 

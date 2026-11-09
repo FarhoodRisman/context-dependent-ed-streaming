@@ -2,7 +2,7 @@
 
 *Simulation-Based Evaluation and Optimization of Prioritization and Routing Policies* (working title; target: IEEE Transactions on Engineering Management)
 
-A discrete-event simulation study of emergency department (ED) streaming policies (queue rule plus routing rule) across 27 synthetic ED types, with a regret analysis of one-size-fits-all policies, a prediction-accuracy sweep, a fidelity analysis of similarity-based scoring rules, simulation-based optimization (cross-entropy method) of similarity rules per ED type with transfer tests, and robustness checks on misspecified inputs and 30 out-of-sample ED types.
+A discrete-event simulation study of emergency department (ED) streaming policies (queue rule plus routing rule) across 27 synthetic ED types, with a regret analysis of one-size-fits-all policies, a prediction-accuracy sweep, a fidelity analysis of similarity-based priority indices, simulation-based optimization (cross-entropy method) of similarity indices per ED type with transfer tests, and robustness checks on misspecified inputs and 30 out-of-sample ED types.
 
 Start with `notes/PROJECT_BRIEF.md`; the model is specified in `notes/MODEL_SPEC.md`; decisions are logged in `notes/DECISIONS.md`.
 

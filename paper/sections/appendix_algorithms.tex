@@ -42,7 +42,7 @@ This appendix gives the main algorithms in pseudo-code. Algorithm~\ref{alg:engin
 Within one CTAS level the static key gives the same order as the effective priority at any time, because the ageing rate $\gamma/T_l$ is common to the level; only the heads of the five levels need to be compared at a dispatch. The test suite checks that this gives the same choice as a full scan of the queue.
 
 \begin{algorithm}[H]
-\caption{Decision-level fidelity of a similarity rule $\sigma$ to a reference rule $\rho$}
+\caption{Decision-level fidelity of a similarity index $\sigma$ to a reference rule $\rho$}
 \label{alg:fidelity}
 \begin{algorithmic}[1]
 \STATE run the simulation with $\sigma$; at every dispatch from a queue $Q$ with $|Q|\ge2$:

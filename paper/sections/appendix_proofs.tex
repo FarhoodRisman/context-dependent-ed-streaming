@@ -9,13 +9,13 @@ A patient code is $p=(p_1,\dots,p_K)$ with $p_k\in\{1,\dots,n_k\}$ and $R_k=n_k-
 
 \subsection{Proposition 1 (Linear Index)}
 
-\emph{Statement.} If $q_k\in\{1,n_k\}$ for every $k$ with $w_k>0$, then $S$ is affine in $p$. If $1<q_k<n_k$ for some $k$ with $w_k>0$, then $S$ is not monotone in $p_k$, and the similarity rule differs from every rule that is strictly monotone in $p_k$.
+\emph{Statement.} If $q_k\in\{1,n_k\}$ for every $k$ with $w_k>0$, then $S$ is affine in $p$. If $1<q_k<n_k$ for some $k$ with $w_k>0$, then $S$ is not monotone in $p_k$, and the similarity index differs from every rule that is strictly monotone in $p_k$.
 
 \emph{Proof.} If $q_k=1$ then $d_k(p)=p_k-1$, and if $q_k=n_k$ then $d_k(p)=n_k-p_k$; in both cases $w_k(1-d_k/R_k)$ is affine in $p_k$, and a sum of affine functions is affine. If $1<q_k<n_k$, the $k$-th term equals $w_k(1-(q_k-p_k)/R_k)$ for $p_k\le q_k$, which increases in $p_k$, and $w_k(1-(p_k-q_k)/R_k)$ for $p_k\ge q_k$, which decreases. Holding the other attributes fixed, $S$ therefore first increases and then decreases in $p_k$; a rule that is strictly monotone in $p_k$ ranks the two patients $(\dots,q_k-1,\dots)$ and $(\dots,q_k+1,\dots)$ strictly, whereas $S$ gives them equal terms, so the two rules differ for some pair of patients. \hfill$\blacksquare$
 
 \subsection{Proposition 2 (Lexicographic Dominance)}
 
-\emph{Statement.} Let $q_k\in\{1,n_k\}$ for all weighted attributes, ordered $k=1,\dots,K$. If $w_k/R_k>\sum_{j>k}w_j$ for every $k$ with $w_k>0$, the similarity rule orders patients lexicographically by $(d_1,\dots,d_K)$, smaller first, with FCFS ties. If $w_k/R_k\le\sum_{j>k}w_j$ for some $k$ with $w_k>0$, the similarity rule and the lexicographic rule order some pair of patients differently.
+\emph{Statement.} Let $q_k\in\{1,n_k\}$ for all weighted attributes, ordered $k=1,\dots,K$. If $w_k/R_k>\sum_{j>k}w_j$ for every $k$ with $w_k>0$, the similarity index orders patients lexicographically by $(d_1,\dots,d_K)$, smaller first, with FCFS ties. If $w_k/R_k\le\sum_{j>k}w_j$ for some $k$ with $w_k>0$, the similarity index and the lexicographic rule order some pair of patients differently.
 
 \emph{Proof.} (Sufficiency.) Take $p,p'$ with $d_j(p)=d_j(p')$ for $j<k$ and $d_k(p)<d_k(p')$. Then
 $S(p)-S(p')=\sum_{j\ge k}\frac{w_j}{R_j}\big(d_j(p')-d_j(p)\big)\ge \frac{w_k}{R_k}-\sum_{j>k}\frac{w_j}{R_j}R_j>0,$

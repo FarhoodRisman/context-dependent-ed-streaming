@@ -821,6 +821,15 @@ def main():
     decision_tree(best)
     decision_guide(rg)
     headline_macros(best, m, e2)
+    import outputs_appendix as oa          # appendix tables/figures share this module's registry
+    oa.mo = sys.modules[__name__]
+    oa.build_all()
+    if (RESULTS / "E6_optimization/opt_test_kpis.csv.gz").exists():
+        import outputs_v11 as ov          # revision experiments E6-E9, bootstrap, alternative weights
+        ov.mo = sys.modules[__name__]
+        ov.build_all(e2)
+    else:
+        print("WARNING: E6 missing; revision outputs skipped")
     prov = provenance.record("outputs")
     srcs = {}
     for f in sorted(RESULTS.glob("*/*.provenance.json")):

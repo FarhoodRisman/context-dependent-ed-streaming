@@ -126,6 +126,20 @@ def test_proposition_routing_ctas_representation():
     assert all(rr.to_second(c[0], c) == ref.to_second(c[0], c) for c in ALL_CODES)
 
 
+@pytest.mark.parametrize("wb,wc", [(0.4, 0.3), (0.2, 0.5), (0.6, 0.2), (0.3, 0.3)])
+def test_proposition_routing_offset_reproduces_prediction_streaming(wb, wc):
+    """Proposition 4: weights on B and C only, w_B < 4 w_C and an offset in
+    [max(w_C, w_B - w_C), w_C + w_B/2) reproduce prediction streaming on every code."""
+    lo, hi = round(max(wc, wb - wc), 9), round(wc + wb / 2, 9)   # scores are compared after rounding to 1e-9
+    for b in (lo, 0.5 * (lo + hi), hi - 1e-6):
+        rr = RouteSimilarity("x", [0, wb, wc, 0, 0, 0], [1] * 6, [5, 5, 2, 2, 4, 2], ctas_floor=3, offset=b)
+        assert all(rr.to_second(c[0], c) == RoutePred().to_second(c[0], c) for c in ALL_CODES), b
+    # outside the interval the representation fails
+    for b in (lo - 0.01, hi + 0.01):
+        rr = RouteSimilarity("x", [0, wb, wc, 0, 0, 0], [1] * 6, [5, 5, 2, 2, 4, 2], ctas_floor=3, offset=b)
+        assert any(rr.to_second(c[0], c) != RoutePred().to_second(c[0], c) for c in ALL_CODES), b
+
+
 def test_prediction_streaming_not_representable_by_default_similarity():
     rr = RouteSimilarity("x", [0.4, 0.3, 0.1, 0.1, 0.05, 0.05], [1] * 6, [5, 5, 2, 2, 4, 2])
     ref = RoutePred()

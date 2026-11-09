@@ -8,11 +8,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 FILES = ["paper/sections/results.tex", "paper/sections/results_alpha_sens.tex", "paper/sections/results_sens.tex",
-         "paper/sections/discussion.tex", "paper/sections/abstract.tex"]
+         "paper/sections/discussion.tex", "paper/sections/abstract.tex", "paper/sections/results_opt.tex",
+         "paper/sections/optimization.tex", "paper/sections/appendix_results.tex"]
 # allowed literal numbers: CTAS levels, section/equation words, thresholds that are definitions
 ALLOWED = {"1", "2", "3", "4", "5", "10", "95", "0.95", "0", "90", "1--3", "4--5", "3--5", "2026", "2025", "2025--2026"}
-STRIP = [r"\\setlength\{[^}]*\}\{[^}]*\}", r"\\(ref|label|cite|input|includegraphics|begin|end|caption)\{[^}]*\}", r"\\[A-Za-z]+\{\}",
-         r"\\[A-Za-z]+", r"%.*", r"\$[^$]*\$", r"\[[^\]]*\]"]
+STRIP = [r"\\begin\{tabular\}.*", r"\bE\d+b?\b", r"\\setlength\{[^}]*\}\{[^}]*\}", r"\\(ref|label|cite|input|includegraphics|begin|end|caption)\{[^}]*\}", r"\\[A-Za-z]+\{\}",
+         r"\\[A-Za-z]+", r"(?<!\\)%.*", r"\$[^$]*\$", r"\[[^\]]*\]"]
 
 
 def main():

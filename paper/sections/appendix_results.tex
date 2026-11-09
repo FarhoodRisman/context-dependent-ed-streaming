@@ -1,0 +1,155 @@
+\section{Additional Results}
+\label{app:results}
+
+This appendix reports the detailed results behind the summaries in Section~\mref{sec:results}. All values are generated from the simulation output by the scripts in the repository; the files in the \texttt{paper/supplement} folder contain the same results in machine-readable form.
+
+\subsection{Face Validity}
+\label{app:res:face}
+
+Table~\ref{tab:face} gives the time intervals of the community, pooled ED under the default policy at the three load levels, which Section~\mref{sec:res:vv} compares with published Canadian values.
+
+\begin{table}[!ht]
+\centering
+\caption{Face validity: community ED, pooled configuration, default policy, \Reps{} replications per load level.}
+\label{tab:face}
+\footnotesize
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_face_validity}\end{adjustbox}
+\end{table}
+
+\subsection{Best Policy by ED Type}
+\label{app:res:best}
+
+Table~\ref{tab:best} lists, for every core ED type, the default policy and the best policy for RATP and mean LOS, with the number of policies that are statistically tied with the best. Table~\ref{tab:kpis} and Fig.~\ref{fig:tails} give the full set of measures for one ED type, the community ED at high load.
+
+\begin{table*}[!t]
+\centering
+\caption{Default policy and best policy by ED type (\Reps{} replications). Tied: number of policies whose paired difference from the best is not significant at the 95\% level, out of all policies for the configuration.}
+\label{tab:best}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_best}\end{adjustbox}
+\end{table*}
+
+\begin{table*}[!ht]
+\centering
+\caption{Performance by queue rule in the community ED at high load (pooled; \Reps{} replications). Second line of each measure: paired difference from CTAS; bold if the 95\% confidence interval excludes zero.}
+\label{tab:kpis}
+\footnotesize
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_kpis_community_high_pooled}\end{adjustbox}
+\end{table*}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/fig_tails.pdf}
+\caption{95th percentile of door-to-physician time by CTAS level and queue rule (community ED, high load, pooled; log scale).}
+\label{fig:tails}
+\end{figure}
+
+\subsection{How Firmly Is the Best Policy Identified?}
+\label{app:res:boot}
+
+For each ED type and measure we drew \BootB{} bootstrap samples of the \Reps{} replications (resampling replications, so that the pairing of policies on common random numbers is kept) and recorded which policy had the lowest mean in each sample. For RATP the policy that is best on the full sample remains best in a median of \BootRatpMedianP\% of the bootstrap samples; the share is at least 90\% in \BootRatpNNinety{} of the \NEdTypes{} ED types and below one half in \BootRatpNHalf. For mean LOS the median is \BootLosMedianP\% (at least 90\% in \BootLosNNinety{} ED types, below one half in \BootLosNHalf). Where the share is low, two or more policies are practically equivalent, which is consistent with the ties reported in Table~\ref{tab:best}; the regret of choosing any of them is then small.
+
+\subsection{Alternative Acuity Weights in RATP}
+\label{app:res:altw}
+
+RATP weights the breach rate of CTAS level $l$ by $1/l$. Table~\ref{tab:altw} repeats the identification of the best policy per ED type and of the best single policy with three other weightings. With linear weights $6-l$, the best policy is unchanged in \AltWLinearSame{} of the \NEdTypes{} ED types; with equal weights in \AltWEqualSame{}; and with inverse-square weights in \AltWSteepSame. Equal weights give the breach rate of all patients and therefore put most weight on CTAS~3 and~4, which are the largest groups.
+
+\begin{table}[!t]
+\centering
+\caption{Best policies under alternative acuity weights for the breach-rate measure. Same best: number of ED types in which the best policy equals the best policy under RATP. Best single policy: the policy with the smallest mean regret over all ED types.}
+\label{tab:altw}
+\footnotesize
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_alt_weights}\end{adjustbox}
+\end{table}
+
+\subsection{Sensitivity to Boarding and Diagnostic Intensity}
+\label{app:res:sens}
+
+Table~\ref{tab:sens} reports the sensitivity analysis summarized in Section~\mref{sec:res:sens}. The supplement contains the results for every policy and ED type, and those of the value-of-prediction experiment.
+
+\begin{table}[!ht]
+\centering
+\caption{Sensitivity (\NMediumTypes{} medium-load ED types, \RepsSecondary{} replications): number of ED types in which the core best policy is still best, and mean (maximum) regret of keeping the core best policy.}
+\label{tab:sens}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_sensitivity}\end{adjustbox}
+\end{table}
+
+\subsection{Trade-Offs and Value of Prediction}
+\label{app:res:vop}
+
+Fig.~\ref{fig:pareto} shows mean LOS against RATP for all policies in the community ED at high load, and Table~\ref{tab:vop} the gain of the best prediction-based policy over the best policy without predictions in the medium-load ED types (Sections~\mref{sec:res:mech} and~\mref{sec:res:vop}).
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_pareto.pdf}
+\caption{Mean LOS against RATP for all policies in the community ED at high load. Grey line: policies not dominated on both measures (labelled). Overloaded policies (Main-area utilization $\geq$ \OverloadThreshold) are omitted.}
+\label{fig:pareto}
+\end{figure}
+
+\begin{table*}[!ht]
+\centering
+\caption{Gain of the best prediction-based policy over the best policy without predictions (medium load), with perfect information ($\alpha=0$) and reference accuracy ($\alpha=1$), and the largest $\alpha$ tested at which it is still better ($\geq$: better at every $\alpha$ tested).}
+\label{tab:vop}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_value_of_prediction}\end{adjustbox}
+\end{table*}
+
+\subsection{Optimized Similarity Rules: Details}
+\label{app:res:opt}
+
+Table~\ref{tab:optfull} gives the test-replication objective of the default policy, the best fixed policy and the optimized similarity policy for every ED type. The best fixed policy is the one with the lowest mean objective on the same test replications, so the comparison is conservative for the optimized rule: the fixed policy is selected with knowledge of the test outcomes, the optimized rule is not. Fig.~\ref{fig:optparamsaccess} shows the parameters of the rules optimized for the access objective (Fig.~\mref{fig:optparams} in the main text shows the balanced objective) and Fig.~\ref{fig:cem} the progress of the search. On average, the training objective of the selected rule was \OptAccessTrainOptimism\% (access) and \OptBalancedTrainOptimism\% (balanced) away from its test value and the validation objective \OptAccessValOptimism\% and \OptBalancedValOptimism\%; negative values mean the search replications were more favourable than the test replications. Each search used about \CemEvalsPerType{} simulation runs per ED type and objective. Table~\ref{tab:levers} gives the lever check of experiment E6b and Fig.~\ref{fig:transfer} the transfer regret of every pair of ED types.
+
+\begin{table*}[!t]
+\centering
+\caption{Objective on the \Reps{} test replications by ED type: default policy (CTAS/C), best fixed policy, and optimized similarity policy. Balanced objective: $J=\tfrac12\,\text{RATP}/\text{RATP}_0+\tfrac12\,\overline{\text{LOS}}/\overline{\text{LOS}}_0$, so $J=1$ for the default policy. $^{*}$: optimized better than the best fixed policy (paired 95\% confidence interval excludes zero); $^{\dagger}$: worse.}
+\label{tab:optfull}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_opt_full}\end{adjustbox}
+\end{table*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_opt_params_access.pdf}
+\caption{Parameters of the similarity rules optimized for the access objective. Rows: ED types, with the optimized target code $q_A$--$q_F$ in brackets. Columns: queue weights, ageing $\gamma$, reassessment bonus $\beta$, routing weights and routing offset $b$ (two-area EDs only).}
+\label{fig:optparamsaccess}
+\end{figure*}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_cem_convergence.pdf}
+\caption{Best training objective by iteration of the cross-entropy search, relative to the first iteration. Grey: individual ED types; blue: median.}
+\label{fig:cem}
+\end{figure}
+
+\begin{table}[!ht]
+\centering
+\caption{Change in the objective (\%) when one parameter of the optimized rule is changed (E6b, \NLeverReps{} test replications); negative is better. Better/worse: ED types with a change of more than 1\% in either direction.}
+\label{tab:levers}
+\footnotesize
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_levers}\end{adjustbox}
+\end{table}
+
+\begin{figure*}[!ht]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_transfer.pdf}
+\caption{Transfer regret (\%) of optimized rules (\NTransferReps{} test replications). Row: ED type for which the rule was optimized; column: ED type to which it is applied; the diagonal is zero by definition. Top: access objective; bottom: balanced objective.}
+\label{fig:transfer}
+\end{figure*}
+
+\subsection{Robustness to Misspecified Inputs: Details}
+\label{app:res:rob}
+
+Table~\ref{tab:rob} reports, for each perturbation in E8, the rank correlation between the policy ranking under the perturbed inputs and the ranking in the core design, the regret of the policy that was best in the core design when it is used under the perturbed inputs, and the balanced objective of the optimized rule relative to the best fixed policy under the perturbed inputs and to the default. Values are averages over the nine medium-load ED types.
+
+\begin{table*}[!t]
+\centering
+\caption{Robustness of the policy ranking to misspecified inputs (medium-load ED types, \NRobReps{} replications). Kendall $\tau$: rank correlation of mean RATP or mean LOS over all fixed policies between the perturbed and the core inputs. Regret of core best: regret under the perturbed inputs of the policy that is best under the core inputs. Optimized (balanced): balanced objective of the rule optimized under the core inputs, relative to the best fixed policy under the perturbed inputs (positive: worse) and improvement over the default.}
+\label{tab:rob}
+\footnotesize
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_robustness}\end{adjustbox}
+\end{table*}

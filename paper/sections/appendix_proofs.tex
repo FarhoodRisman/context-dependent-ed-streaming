@@ -1,0 +1,47 @@
+\section{Propositions and Proofs}
+\label{app:proofs}
+
+This appendix restates the propositions of Section~\mref{sec:propositions}, gives full proofs, and adds two results used in the optimization: exact representation of prediction streaming when the routing rule has an offset, and the policies contained in the optimized policy class.
+
+\subsection{Setting}
+
+A patient code is $p=(p_1,\dots,p_K)$ with $p_k\in\{1,\dots,n_k\}$ and $R_k=n_k-1\geq 1$. A target code $q$ and weights $w\geq0$ define $S(p)=\sum_k w_k(1-|p_k-q_k|/R_k)$. The queue serves CTAS~1 patients first and then the largest $S$; equal (rounded) scores are served first-come-first-served (FCFS). We write $d_k(p)=|p_k-q_k|$ for the distance of attribute $k$ from its target. The set of codes that can occur is the full product set unless stated otherwise.
+
+\subsection{Proposition 1 (Linear Index)}
+
+\emph{Statement.} If $q_k\in\{1,n_k\}$ for every $k$ with $w_k>0$, then $S$ is affine in $p$. If $1<q_k<n_k$ for some $k$ with $w_k>0$, then $S$ is not monotone in $p_k$, and the similarity rule differs from every rule that is strictly monotone in $p_k$.
+
+\emph{Proof.} If $q_k=1$ then $d_k(p)=p_k-1$, and if $q_k=n_k$ then $d_k(p)=n_k-p_k$; in both cases $w_k(1-d_k/R_k)$ is affine in $p_k$, and a sum of affine functions is affine. If $1<q_k<n_k$, the $k$-th term equals $w_k(1-(q_k-p_k)/R_k)$ for $p_k\le q_k$, which increases in $p_k$, and $w_k(1-(p_k-q_k)/R_k)$ for $p_k\ge q_k$, which decreases. Holding the other attributes fixed, $S$ therefore first increases and then decreases in $p_k$; a rule that is strictly monotone in $p_k$ ranks the two patients $(\dots,q_k-1,\dots)$ and $(\dots,q_k+1,\dots)$ strictly, whereas $S$ gives them equal terms, so the two rules differ for some pair of patients. \hfill$\blacksquare$
+
+\subsection{Proposition 2 (Lexicographic Dominance)}
+
+\emph{Statement.} Let $q_k\in\{1,n_k\}$ for all weighted attributes, ordered $k=1,\dots,K$. If $w_k/R_k>\sum_{j>k}w_j$ for every $k$ with $w_k>0$, the similarity rule orders patients lexicographically by $(d_1,\dots,d_K)$, smaller first, with FCFS ties. If $w_k/R_k\le\sum_{j>k}w_j$ for some $k$ with $w_k>0$, the similarity rule and the lexicographic rule order some pair of patients differently.
+
+\emph{Proof.} (Sufficiency.) Take $p,p'$ with $d_j(p)=d_j(p')$ for $j<k$ and $d_k(p)<d_k(p')$. Then
+$S(p)-S(p')=\sum_{j\ge k}\frac{w_j}{R_j}\big(d_j(p')-d_j(p)\big)\ge \frac{w_k}{R_k}-\sum_{j>k}\frac{w_j}{R_j}R_j>0,$
+since $d_k(p')-d_k(p)\ge1$ and $|d_j(p')-d_j(p)|\le R_j$. If $d(p)=d(p')$ on all weighted attributes, the scores are equal before and after rounding and FCFS decides, as in the lexicographic rule. Attributes with $w_k=0$ do not enter either rule.
+(Necessity.) Suppose $w_k/R_k\le\sum_{j>k}w_j$. Choose $p$ with $d_k(p)=0$, $d_j(p)=R_j$ for $j>k$, and $p'$ with $d_k(p')=1$, $d_j(p')=0$ for $j>k$, both equal on $j<k$. The lexicographic rule serves $p$ first. But $S(p)-S(p')=w_k/R_k-\sum_{j>k}w_j\le0$: either $p'$ has the larger score, or the scores tie and FCFS serves whichever patient arrived first, which can be $p'$. \hfill$\blacksquare$
+
+\emph{Corollaries.} (i) $w=(1,0,\dots,0)$: strict CTAS priority with FCFS within a level. (ii) $q_B=5$ and $w_A/4>w_B>0$, other weights zero: CTAS priority, then shortest predicted service (CTAS-SPT). (iii) $q_C=2$ and $w_A/4>w_C>0$: CTAS priority, then predicted discharge first (CTAS-PD). (iv) The SIM weights violate the condition at $k=A$ because $\SimWA/4<1-\SimWA$.
+
+\subsection{Proposition 3 (Two-Target Routing)}
+
+\emph{Statement.} Route a patient to the second area if $\Delta(p)=S_{\text{second}}(p)-S_{\text{main}}(p)>0$, with common weights and targets at opposite ends of every weighted attribute. Then $\Delta(p)=\sum_k\sigma_k(w_k/R_k)(2p_k-n_k-1)$ with $\sigma_k\in\{-1,1\}$. With weight on CTAS only, the rule is CTAS streaming (CTAS~4--5 to the second area). Prediction streaming cannot be represented.
+
+\emph{Proof.} With $q^{\text{second}}_k=n_k$ and $q^{\text{main}}_k=1$, the $k$-th term of $\Delta$ is $(w_k/R_k)(|p_k-1|-|p_k-n_k|)=(w_k/R_k)(2p_k-n_k-1)$; reversing the targets changes the sign. With weight on CTAS only, $\Delta>0$ if and only if $2p_A-6>0$, that is $p_A\ge4$; at $p_A=3$, $\Delta=0$ and the patient stays in Main. For prediction streaming (second area if and only if $p_A\ge3$, $p_C=2$ and $p_B\ge4$), consider $p=(3,3,2,\cdot,\cdot,\cdot)$, which must stay in Main, and $p'=(3,4,2,\cdot,\cdot,\cdot)$, which must go to the second area. With targets as in our rules ($q^{\text{second}}_B=5$, $q^{\text{second}}_C=2$), the B term of $p$ is $0$ and its C term is $+w_C$, so $\Delta(p)\le0$ requires $w_C\le-\sum_{k\notin\{B,C\}}\sigma_k(w_k/R_k)(2p_k-n_k-1)$ for every value of the other attributes, which, since the terms of D, E and F can each reach $+w_k$, forces $w_D=w_E=w_F=0$ and then $w_C=0$; but with $w_C=0$ the rule ignores predicted discharge and sends some predicted admissions to the second area. \hfill$\blacksquare$
+
+\subsection{Proposition 4 (Routing with an Offset)}
+
+\emph{Statement.} Route to the second area if $\Delta(p)>b$ for an offset $b$, with targets as in Proposition~\mref{prop:route}, weights on B and C only, and the safety floor (CTAS~1--2 to Main). This rule equals prediction streaming if and only if $w_B<4w_C$ and $\max(w_C,\,w_B-w_C)\le b<w_C+w_B/2$.
+
+\emph{Proof.} For CTAS~3--5, $\Delta(p)=(w_B/4)(2p_B-6)+w_C(2p_C-3)$. Prediction streaming sends exactly the patients with $p_C=2$ and $p_B\in\{4,5\}$. These must satisfy $\Delta>b$; the smallest such $\Delta$ is at $p_B=4$: $w_B/2+w_C>b$. All other patients must satisfy $\Delta\le b$; among those with $p_C=2$ the largest $\Delta$ is at $p_B=3$, equal to $w_C$, and among those with $p_C=1$ it is at $p_B=5$, equal to $w_B-w_C$. Both conditions hold if and only if $\max(w_C,w_B-w_C)\le b<w_C+w_B/2$, and such a $b$ exists if and only if $w_B-w_C<w_C+w_B/2$, that is $w_B<4w_C$ (the other inequality, $w_C<w_C+w_B/2$, holds whenever $w_B>0$). \hfill$\blacksquare$
+
+\emph{Check.} With $w_B=\PropFourWB$, $w_C=\PropFourWC$ and $b=\PropFourB$ the offset rule agrees with prediction streaming on \PropFourAgree\% of all \NCodes{} codes; the default similarity routing (offset zero, SIM weights) agrees on \PropFourAgreeSimRoute\%.
+
+\subsection{Proposition 5 (Policies Contained in the Optimized Class)}
+
+\emph{Statement.} Let $\Pi$ be the class searched in Section~\mref{sec:optimization}: similarity queue rules with $q_A=1$, any targets for B--F, ageing $\gamma\ge0$ and reassessment bonus $\beta$; and similarity routing with offset $b$. The closure of $\Pi$ (allowing weights equal to zero) contains FCFS, CTAS, CTAS-SPT, CTAS-PD and APQ, and CTAS streaming and prediction streaming.
+
+\emph{Proof.} FCFS: all weights zero and $\gamma=0$ give equal scores for all patients. APQ: all weights zero and $\gamma>0$ give priority $\gamma(t-t_0)/T_l$, which orders patients exactly as APQ for any $\gamma>0$. CTAS, CTAS-SPT and CTAS-PD follow from the corollaries of Proposition~\mref{prop:lex}; CTAS streaming from Proposition~\mref{prop:route}; prediction streaming from Proposition~4. \hfill$\blacksquare$
+
+Proposition~5 means that, up to the limits of the search, the best policy in $\Pi$ is at least as good as every fixed policy of Section~\mref{sec:framework} that it contains. The search space uses a softmax parameterization, in which weights are positive, so these rules are reached only in the limit; the cross-entropy method is a heuristic and does not guarantee that the best policy in $\Pi$ is found. The comparison on test replications in Section~\mref{sec:res:opt} measures what the search achieved.

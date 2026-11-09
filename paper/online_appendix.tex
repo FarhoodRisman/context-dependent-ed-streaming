@@ -1,0 +1,27 @@
+% Online appendix for the submission version (main_review.tex). Compile main_review.tex first,
+% then this file, then main_review.tex again, so that cross-references resolve in both.
+\documentclass[12pt,onecolumn,draftclsnofoot,journal]{IEEEtran}
+\input{preamble}
+\usepackage{setspace}
+\onehalfspacing
+\externaldocument[M-]{main_review}
+\renewcommand{\mref}[1]{\ref{M-#1}}
+
+\begin{document}
+\title{Online Appendix to ``One Policy Does Not Fit All: Matching Patient Streaming Policies to Emergency Department Types''}
+\author{Anonymous authors}
+\maketitle
+
+\noindent Sections A--F are the appendices. Tables, figures, algorithms and equations numbered S1, S2, \dots{} are in this appendix; all other numbers refer to the main paper.
+
+\appendices
+% tables, figures, algorithms and equations of the online appendix are numbered S1, S2, ...
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thealgorithm}{S\arabic{algorithm}}
+\renewcommand{\theequation}{S\arabic{equation}}
+\input{sections/appendices}
+
+\bibliographystyle{\ifdefined\localbst unsrtnat\else IEEEtranN\fi}
+\bibliography{ed_library}
+\end{document}

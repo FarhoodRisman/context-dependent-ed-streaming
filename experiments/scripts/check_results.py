@@ -6,10 +6,15 @@ import sys
 import numpy as np
 import pandas as pd
 
-from common import RESULTS
+from common import P, RESULTS
 
 FILES = {"E2": "E2_main/kpis.csv.gz", "E4": "E4_alpha/kpis_alpha.csv.gz",
-         "E5": "E5_sensitivity/kpis_sensitivity.csv.gz", "E1": "E1_validation/face_validity_kpis.csv.gz"}
+         "E5": "E5_sensitivity/kpis_sensitivity.csv.gz", "E1": "E1_validation/face_validity_kpis.csv.gz",
+         "E6": "E6_optimization/opt_test_kpis.csv.gz"}
+FAST = {"E7": ("E7_transfer/transfer_kpis.csv.gz", ["acuity", "load", "config", "rep", "source", "objective"]),
+        "E8": ("E8_robustness/robustness_kpis.csv.gz", ["acuity", "config", "variant", "rep", "queue", "routing"]),
+        "E9": ("E9_out_of_sample/oos_kpis.csv.gz", ["id", "rep", "queue", "routing"]),
+        "E6b": ("E6b_levers/lever_kpis.csv.gz", ["acuity", "load", "config", "rep", "objective", "variant"])}
 KEY = ["acuity", "load", "config", "boarding", "diagnostics", "rep", "queue", "routing", "alpha"]
 COMPARE = ["los_all_mean", "ratp", "awt", "pia_all_p90", "n_patients"]
 
@@ -63,6 +68,43 @@ def main():
         d = float(np.abs(m.los_all_mean_ref - m.los_all_mean).max()) if len(m) else 0.0
         check("E3 reference rules vs E2: identical LOS for shared runs", len(m) > 0 and d == 0.0,
               f"shared runs: {len(m)}, max abs difference: {d}")
+    # revision experiments with the fast KPI set
+    fast = {}
+    for k, (f, key) in FAST.items():
+        if not (RESULTS / f).exists():
+            continue
+        df = pd.read_csv(RESULTS / f)
+        for c in ("routing", "objective"):
+            if c in df:
+                df[c] = df[c].fillna("")
+        fast[k] = df
+        check(f"{k}: every observed patient departed", (df.n_unfinished == 0).all())
+        check(f"{k}: RATP within [0, sum 1/l]", ((df.ratp >= 0) & (df.ratp <= sum(1 / l for l in range(1, 6)))).all())
+        check(f"{k}: no duplicate run keys", not df.duplicated(key).any())
+    pc = P.policies_config()["default_policy"]
+    if "E7" in fast and "E2" in data:
+        d7 = fast["E7"][fast["E7"].source == "DEFAULT"]
+        e2 = data["E2"]
+        e2 = e2[(e2.queue == pc["queue"]) & ((e2.routing == pc["routing"]) | (e2.config == "POOLED"))]
+        m = d7.merge(e2, on=["acuity", "load", "config", "rep"], suffixes=("_a", "_b"))
+        diff = max(float(np.abs(m[f"{c}_a"] - m[f"{c}_b"]).max()) for c in ("ratp", "los_all_mean", "n_patients")) if len(m) else 1.0
+        check("E7 default rows vs E2 default policy: identical results", len(m) > 0 and diff < 1e-9,
+              f"shared runs: {len(m)}, max abs difference: {diff}")
+    if "E7" in fast and "E6" in data:
+        d7 = fast["E7"][fast["E7"].source == fast["E7"].acuity + "|" + fast["E7"].load]
+        e6 = data["E6"].copy()
+        e6["objective"] = e6.queue.str.replace("OPT-", "").str.lower()
+        m = d7.merge(e6, on=["acuity", "load", "config", "rep", "objective"], suffixes=("_a", "_b"))
+        diff = max(float(np.abs(m[f"{c}_a"] - m[f"{c}_b"]).max()) for c in ("ratp", "los_all_mean", "n_patients")) if len(m) else 1.0
+        check("E7 own-type optimized rules vs E6 test runs: identical results", len(m) > 0 and diff < 1e-9,
+              f"shared runs: {len(m)}, max abs difference: {diff}")
+    if "E6b" in fast and "E7" in fast:
+        a = fast["E6b"][fast["E6b"].variant == "opt"]
+        b = fast["E7"][fast["E7"].source == fast["E7"].acuity + "|" + fast["E7"].load]
+        m = a.merge(b, on=["acuity", "load", "config", "rep", "objective"], suffixes=("_a", "_b"))
+        diff = float(np.abs(m.ratp_a - m.ratp_b).max()) if len(m) else 1.0
+        check("E6b optimized rules vs E7 own-type rules: identical results", len(m) > 0 and diff < 1e-12,
+              f"shared runs: {len(m)}, max abs difference: {diff}")
     (RESULTS / "checks.json").write_text(json.dumps(out, indent=2))
     for r in out:
         print(("PASS " if r["pass"] else "FAIL ") + r["check"] + (f"  [{r['detail']}]" if r["detail"] else ""))

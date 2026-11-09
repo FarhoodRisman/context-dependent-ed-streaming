@@ -1,4 +1,5 @@
 \usepackage{amsmath,amsfonts,amssymb}
+\usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{array}
 \usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
@@ -12,7 +13,21 @@
 \usepackage{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta}
+\usepackage{xr-hyper}
 \usepackage[colorlinks,allcolors=blue]{hyperref}
 \newtheorem{proposition}{Proposition}
 \hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
 \input{numbers}
+
+% Cross-references between the main paper and the online appendix. In main.tex both are in one
+% document and \aref/\mref are plain \ref. main_review.tex and online_appendix.tex import each
+% other's labels with prefixes (A- and M-), so that citations of the other document are not imported
+% under the same keys.
+\providecommand{\aref}[1]{\ref{#1}}
+\providecommand{\mref}[1]{\ref{#1}}
+
+% Figure widths in the body: full text/column width in the journal layout; main_review.tex
+% scales them down because its single column is much wider than an IEEE column.
+\newlength{\figtw}\AtBeginDocument{\setlength{\figtw}{\figscale\textwidth}}
+\newlength{\figcw}\AtBeginDocument{\setlength{\figcw}{\figscale\columnwidth}}
+\providecommand{\figscale}{1}

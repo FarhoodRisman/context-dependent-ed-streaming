@@ -1,0 +1,59 @@
+\section{Patient Coding and the Similarity Score}
+\label{app:coding}
+
+This appendix describes how the six-attribute code of a patient is built, how predicted codes are generated, and how the similarity score is computed, with a worked example. The scheme follows the classification-and-coding approach of group technology, in which an item is described by a short string of coded attributes and items are compared by a similarity coefficient \cite{OFFODILE1990,Seifoddini01091986,YIN2005471}.
+
+\subsection{Attributes and Classes}
+
+Table~\ref{tab:coding} lists the attributes. Attribute A is the CTAS level assigned at triage and is observed without error. Attributes B to F describe the patient's expected course in the ED; in practice they would come from a prediction model at triage, and in the simulation they are predicted from the patient's true attributes as described below.
+
+\begin{table}[!ht]
+\centering
+\caption{Coding scheme. Lower codes indicate higher acuity, longer service, admission, diagnostic need, heavier resource use or consultation.}
+\label{tab:coding}
+\footnotesize
+\begin{adjustbox}{max width=\linewidth}\begin{tabular}{lp{3.6cm}p{6.2cm}}
+\toprule
+Attribute & Classes & Definition in the model \\
+\midrule
+A: CTAS level & 1--5 & Triage level drawn from the acuity mix (observed). \\
+B: Service class & 1 very long, 2 long, 3 average, 4 short, 5 very short & Quintile of total treatment time (physician assessment and reassessment, diagnostic and consultation steps, discharge process; waits and boarding excluded). Cut points \SvcCutOne, \SvcCutTwo, \SvcCutThree{} and \SvcCutFour{} minutes, from the community ED. \\
+C: Admission & 1 admitted, 2 discharged & Disposition drawn from the CTAS-specific admission probability. \\
+D: Diagnostics & 1 yes, 2 no & At least one laboratory, X-ray or CT step in the pathway. \\
+E: Resource use & 1 three or more, 2 two, 3 one, 4 none & Number of diagnostic and consultation steps in the pathway. \\
+F: Consultation & 1 yes, 2 no & Consultation (DR) step in the pathway. \\
+\bottomrule
+\end{tabular}\end{adjustbox}
+\end{table}
+
+\subsection{Predicted Codes}
+
+For each predicted attribute with $n$ classes, a reference confusion matrix $M_{\text{ref}}$ has the reference accuracy on its diagonal; the remaining probability of row $i$ is spread over the other classes $j$ in proportion to $\delta^{|i-j|-1}$ with $\delta=\ErrDecay$, so that errors fall mostly on neighbouring classes. Table~\ref{tab:confusion} shows the two ordinal matrices. The matrix used at error level $\alpha$ is $M(\alpha)=I+\alpha(M_{\text{ref}}-I)$, which is a valid stochastic matrix for every $\alpha$ for which its diagonal is non-negative. A patient's predicted class is obtained by inverse-transform sampling from row $p$ of $M(\alpha)$ with one uniform random number per patient and attribute; because the same number is used at every $\alpha$, the predicted class changes monotonically from the true class as $\alpha$ grows, and comparisons across $\alpha$ use common random numbers.
+
+\begin{table}[!ht]
+\centering
+\caption{Reference confusion matrices ($\alpha=1$) for the two ordinal predicted attributes. Rows: true class; columns: predicted class.}
+\label{tab:confusion}
+\footnotesize
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_confusion}\end{adjustbox}
+\end{table}
+
+\subsection{Similarity Score and Queue Order}
+
+For a code $p$, a target code $q$ and weights $w\geq 0$, the score is (\mref{eq:sim}): $S(p)=\sum_k w_k(1-|p_k-q_k|/R_k)$ with $R_k=n_k-1$. Each term lies between $0$ and $w_k$, so with weights that sum to one the score lies in $[0,1]$. A queue ordered by similarity serves CTAS~1 patients first and then the patient with the largest score; the score is rounded to $10^{-9}$ and ties are broken by the time the patient joined the queue and then by patient identifier. With an ageing term $\gamma$, the effective priority at time $t$ of a CTAS-$l$ patient who joined at $t_0$ is $S(p)+\gamma(t-t_0)/T_l$, where $T_l$ is the CTAS target. With a reassessment bonus $\beta$, a patient waiting for a physician reassessment receives $S(p)+\beta$ in the physician queue.
+
+\subsection{Worked Example}
+
+Table~\ref{tab:example} scores four patients. Under the SIM rule (target $1$-$5$-$2$-$2$-$4$-$2$, weights \SimWA, \SimWB, \SimWC, \SimWD, \SimWE, \SimWF), patient P3, a CTAS~3 patient expected to be discharged quickly without tests, has score \WexPThreeSim{} and is ranked \WexPThreeRankSim{}, ahead of the CTAS~2 patients P1 and P2. Under the exact representation of CTAS-SPT ($w_A=\RepSptWA$, $w_B=\RepSptWB$), both CTAS~2 patients are ranked first, and among them the patient with the shorter expected service (P2) comes first, as Proposition~\mref{prop:lex} requires. The last two columns show similarity routing: the difference $S_{\text{second}}-S_{\text{main}}$ is positive for P3 and P4, which go to the second area; P1 and P2 are CTAS~2 and stay in the Main area by the safety rule.
+
+\begin{table}[!ht]
+\centering
+\caption{Worked example: scores and ranks of four patients under SIM and under the exact similarity representation of CTAS-SPT, and similarity routing (values computed with the model code).}
+\label{tab:example}
+\footnotesize
+\begin{adjustbox}{max width=\linewidth}\input{tables/tab_worked_example}\end{adjustbox}
+\end{table}
+
+\subsection{Why the Weights Need to Be Checked}
+
+The worked example shows how a weighting that is read as ``acuity first'' can rank a less urgent patient first. With weights $(\SimWA,\SimWB,\dots)$ the largest possible gain from one CTAS level is $\SimWA/4$, while the other attributes together can add up to the sum of their weights. Proposition~\mref{prop:lex} turns this observation into a condition that can be checked before a scoring rule is deployed, and Section~\mref{sec:optimization} shows how weights can instead be chosen by simulation-based optimization.

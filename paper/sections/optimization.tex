@@ -1,0 +1,58 @@
+\section{Simulation-Based Optimization of Similarity Rules}
+\label{sec:optimization}
+
+The SIM rule of Section~\ref{sec:framework} uses a target code and weights chosen by judgement. Two questions follow: how much better can a similarity rule do if its parameters are chosen for a particular ED type and objective, and does a rule tuned for one ED type remain good in others? We answer them by simulation-based optimization \cite{amaran2016simulation}.
+
+\subsection{Policy Class and Decision Variables}
+
+Table~\ref{tab:decision} lists the decision variables. The queue rule has six weights, target classes for attributes B--F (attribute A is fixed at $q_A=1$ so that higher acuity always raises the score), an ageing term $\gamma$ and a reassessment bonus $\beta$ that is added to the score of a patient waiting for a physician reassessment. The bonus lets the optimization decide whether in-progress patients should be seen before new patients, a question that Shakeri et al.\ \cite{Shakeri2025_WhoToSeeNext} study analytically: in their model in-progress patients should be seen first unless the waiting time of new patients is the main concern. The sign of the optimized $\beta$ therefore shows which of the two cases applies under each objective. In the two-area configurations the routing rule has six weights and an offset $b$; a patient of CTAS level 3--5 goes to the second area if $S_{\text{second}}(p)-S_{\text{main}}(p)>b$. By Propositions~4 and~5 in Appendix~\aref{app:proofs}, the closure of this class contains every fixed queue and routing rule of Section~\ref{sec:framework}, including prediction streaming, which the offset makes representable.
+
+\begin{table}[!htbp]
+\centering
+\caption{Decision variables of the optimized similarity policy.}
+\label{tab:decision}
+\footnotesize
+\begin{adjustbox}{max width=\linewidth}\begin{tabular}{llp{3.4cm}}
+\toprule
+Variable & Domain & Parameterization \\
+\midrule
+Queue weights $w_A,\dots,w_F$ & simplex & softmax of six real numbers \\
+Targets $q_B,\dots,q_F$ & classes of each attribute & categorical ($q_A=1$ fixed) \\
+Ageing $\gamma$ & $(0,0.5)$ & $0.5\cdot$logistic \\
+Reassessment bonus $\beta$ & $(-0.5,0.5)$ & $0.5\tanh$ \\
+Routing weights $v_A,\dots,v_F$ & simplex & softmax (two-area EDs) \\
+Routing offset $b$ & $(-0.5,0.5)$ & $0.5\tanh$ (two-area EDs) \\
+\bottomrule
+\end{tabular}\end{adjustbox}
+\end{table}
+
+\subsection{Objectives}
+
+Two objectives are optimized separately for each of the \NEdTypes{} core ED types. The \emph{access} objective is RATP. The \emph{balanced} objective is $J=\tfrac12\,\text{RATP}/\text{RATP}_0+\tfrac12\,\overline{\text{LOS}}/\overline{\text{LOS}}_0$, where the subscript $0$ denotes the default policy on the same replication; it weights the relative changes in access and flow equally and prevents the search from improving access at the expense of patients waiting for reassessment.
+
+\subsection{Cross-Entropy Search}
+
+The objective can be evaluated only by simulation, is noisy, and the decision space mixes continuous and categorical variables. We use the cross-entropy method \cite{deBoer2005_CEMTutorial}, which samples candidate policies from a parameterized distribution, keeps the best candidates and moves the distribution toward them (Algorithm~\ref{alg:cem}). Continuous variables are sampled from independent normal distributions in the unconstrained parameterization and target classes from independent categorical distributions. The search starts from a distribution centred on the SIM rule (and on similarity routing), and the SIM rule itself is evaluated in the first iteration.
+
+\begin{algorithm}[!htbp]
+\caption{Cross-entropy search for one ED type and objective}
+\label{alg:cem}
+\begin{algorithmic}[1]
+\REQUIRE training replications $\mathcal{R}_{\text{tr}}$, validation replications $\mathcal{R}_{\text{va}}$, test replications $\mathcal{R}_{\text{te}}$ (disjoint); $N$, $E$, $K$, smoothing $\eta$
+\STATE initialize normal means $\mu$ at the SIM parameters, standard deviations $\sigma=1$; categorical probabilities with mass $0.5$ on the SIM targets
+\FOR{$k=1,\dots,K$}
+\STATE sample $N$ candidate policies (include SIM when $k=1$)
+\STATE evaluate each candidate on all $r\in\mathcal{R}_{\text{tr}}$ (same patient lists for all candidates) and average the objective
+\STATE keep the $E$ best candidates (elite); $\mu\leftarrow\eta\,\bar\mu_{\text{elite}}+(1-\eta)\mu$, $\sigma\leftarrow\max\{\eta\,s_{\text{elite}}+(1-\eta)\sigma,\,0.05\}$
+\STATE categorical probabilities $\leftarrow\eta\cdot$ elite frequencies $+(1-\eta)\cdot$ previous probabilities
+\ENDFOR
+\STATE shortlist the $L$ best distinct candidates by training objective; evaluate them on $\mathcal{R}_{\text{va}}$; select the best
+\STATE evaluate the selected policy on $\mathcal{R}_{\text{te}}$ with all KPIs, paired with every fixed policy
+\end{algorithmic}
+\end{algorithm}
+
+We use $K=\CemIter$ iterations of $N=\CemPop$ candidates, an elite of $E=\CemElite$, smoothing $\eta=\CemSmooth$ and a shortlist of $L=\CemShort$. Candidates are evaluated on \NTrainReps{} training replications, the shortlist on \NValReps{} validation replications, and the selected policy on the \Reps{} test replications of the main experiment, which are never used in the search or the selection. Because the test replications are those of E2, the optimized policy is compared pairwise, on identical patients, with every fixed policy. The separate validation and test replications remove the optimization bias of selecting the best of many noisy candidates from the reported results.
+
+\subsection{Transfer Across ED Types}
+
+To measure how specific an optimized rule is to its ED type, the rule optimized for ED type $i$ is applied to every other ED type $j$ with the same configuration (experiment E7, \NTransferReps{} test replications). The \emph{transfer regret} is $J(\pi_i,j)/J(\pi_j,j)-1$, where $\pi_j$ is the rule optimized for type $j$. A small transfer regret means that ED types can share a rule; a large one means that the rule has to be tuned locally.

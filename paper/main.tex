@@ -1,4 +1,5 @@
-% Camera-ready style (two columns, with authors). The review version for submission is main_review.tex.
+% Full version (two columns, with authors and all appendices). The submission version is main_review.tex
+% (anonymised, double spaced) with the appendices in online_appendix.tex.
 \documentclass[lettersize,journal]{IEEEtran}
 \input{preamble}
 
@@ -17,6 +18,9 @@
 \input{sections/abstract}
 
 \input{sections/body}
+
+\appendices
+\input{sections/appendices}
 
 \bibliographystyle{\ifdefined\localbst unsrtnat\else IEEEtranN\fi}
 \bibliography{ed_library}

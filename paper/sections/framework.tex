@@ -3,9 +3,33 @@
 
 \subsection{Overview}
 
-The framework has three parts: a generator that creates synthetic patients for a given ED type, a discrete-event model of the ED process, and a set of streaming policies. For each ED type and replication, the generator creates one patient list containing arrival times, triage levels, dispositions, pathways, all activity durations and the predicted attributes at every prediction-error level. Every policy is then run on the same list, so policy comparisons use common random numbers by construction. All model inputs are entered once in configuration files with their sources; the full specification and code are available (see the Data and Code Availability statement).
+Fig.~\ref{fig:framework} shows the structure of the study. The framework has three parts: a generator that creates synthetic patients for a given ED type, a discrete-event model of the ED process, and a set of streaming policies, which are either fixed rules or similarity rules whose parameters are optimized by simulation (Section~\ref{sec:optimization}). For each ED type and replication, the generator creates one patient list containing arrival times, triage levels, dispositions, pathways, all activity durations and the predicted attributes at every prediction-error level. Every policy is then run on the same list, so policy comparisons use common random numbers by construction. All model inputs are entered once in configuration files with their sources; the full specification and code are available (see the Data and Code Availability statement).
 
-\begin{figure*}[!t]
+\begin{figure*}[!htbp]
+\centering
+\begin{tikzpicture}[node distance=3mm and 4mm, >=Stealth,
+  blk/.style={draw, rounded corners=2pt, align=left, font=\scriptsize, fill=black!3, text width=3.55cm, minimum height=1.55cm},
+  hd/.style={font=\scriptsize\bfseries, align=center}]
+\node[blk] (in) {\textbf{Inputs}\\ published case mix and admission rates; published pathways; CTAS targets; stated assumptions (one configuration file, each value with its source)};
+\node[blk, right=of in] (ed) {\textbf{ED types}\\ \NEdTypes{} core types: acuity $\times$ load $\times$ layout; sensitivity (boarding, diagnostics); perturbed inputs; \NOosTypes{} out-of-sample types};
+\node[blk, right=of ed] (gen) {\textbf{Patient generator}\\ arrivals, CTAS, disposition, whole pathway, durations; true code and predicted codes $M(\alpha)$; one list per replication (common random numbers)};
+\node[blk, right=of gen] (des) {\textbf{Discrete-event model}\\ triage, areas, spaces, physician shifts, diagnostics, consults, boarding; event log};
+\node[blk, below=7mm of in] (pol) {\textbf{Policies}\\ \NQueueRules{} queue rules $\times$ 3 routing rules; similarity rules with weights, targets, ageing, reassessment bonus, routing offset};
+\node[blk, right=of pol] (th) {\textbf{Theory}\\ Propositions 1--5: when a similarity rule equals a classical rule; decision-level fidelity};
+\node[blk, right=of th] (opt) {\textbf{Simulation optimization}\\ cross-entropy search per ED type and objective; training, validation and test replications; transfer across types};
+\node[blk, right=of opt] (kpi) {\textbf{Analysis}\\ KPIs from the event log; best policy and ties; regret; value of prediction; robustness; decision guide};
+\draw[->] (in) -- (ed); \draw[->] (ed) -- (gen); \draw[->] (gen) -- (des);
+\draw[->] (pol) -- (th); \draw[->] (th) -- (opt);
+\draw[->] (pol.north east) -- (des.south west);
+\draw[->] (opt.north) to[out=90, in=-120] (des.south);
+\draw[->] (des.south east) to[out=-60, in=60] (kpi.north east);
+\draw[->] (kpi.west) -- (opt.east);
+\end{tikzpicture}
+\caption{Structure of the study. Arrows show the flow of inputs, policies and results; the optimization calls the simulation model repeatedly and is evaluated on replications not used in the search.}
+\label{fig:framework}
+\end{figure*}
+
+\begin{figure*}[!htbp]
 \centering
 \begin{tikzpicture}[node distance=4mm and 5mm, >=Stealth,
   box/.style={draw, rounded corners=2pt, minimum height=7mm, align=center, font=\footnotesize, fill=black!3},
@@ -43,7 +67,7 @@ The model has three configurations. In the \emph{pooled} configuration all patie
 
 ED types are defined by three factors in a full factorial design. The \emph{acuity mix} has three levels (Table~\ref{tab:parameters}): a community mix equal to the pooled CTAS distribution of the 16 highest-volume EDs in Alberta, and tertiary and urgent-care-like mixes placed inside the between-site ranges reported for the same EDs, near their high- and low-acuity ends \cite{Holroyd2016_EDCaseMix}. Admission probabilities by CTAS level are the midpoints of the reported between-site ranges. The \emph{load} has three levels: the offered load of the busiest physician pool is \LoadLow, \LoadMedium{} or \LoadHigh. The \emph{configuration} is pooled, fast track or split flow.
 
-\begin{table}[!t]
+\begin{table}[!htbp]
 \centering
 \caption{Acuity mixes, admission probabilities, CTAS targets and mean physician assessment times by CTAS level.}
 \label{tab:parameters}
@@ -52,22 +76,13 @@ ED types are defined by three factors in a full factorial design. The \emph{acui
 \begin{adjustbox}{max width=\linewidth}\input{tables/tab_parameters}\end{adjustbox}
 \end{table}
 
-Capacities are derived from these inputs by a fixed rule, sized separately for the CTAS~1--3 and CTAS~4--5 streams, so that all three configurations of one acuity mix have the same total numbers of physicians per shift, treatment spaces and diagnostic servers. The base volume is \BaseVisits{} visits per day with a fixed diurnal arrival profile. Physicians are sized for an offered load of \PhysTargetMedium{} in each shift and stream; treatment spaces for an offered load of \SpaceSizing{} on the service-only holding time; diagnostic resources for \DiagTarget; and triage nurses for \TriageTarget{} at the busiest hour of the high load level. The arrival rate is then scaled so that the busiest physician pool has the target offered load. Because a dedicated fast track cannot borrow physicians from the Main area, a fast-track ED reaches a given load level with fewer visits than a pooled ED with the same staff. Table~\ref{tab:capacity} lists the resulting capacities and volumes, which range from \VisitsMin{} to \VisitsMax{} visits per day. Two further factors are varied one at a time on the medium-load types as a sensitivity analysis: boarding (mean decision-to-departure time of \BoardLowMean{} minutes in the core design and \BoardHighMean{} minutes in the high level) and diagnostic intensity (light, typical, heavy).
-
-\begin{table*}[!t]
-\centering
-\caption{Visits per day by load level, treatment spaces and physicians per shift (night/day/evening) for each acuity mix and configuration. Values in parentheses are the second area's share.}
-\label{tab:capacity}
-\footnotesize
-\setlength{\tabcolsep}{5pt}
-\begin{adjustbox}{max width=\linewidth}\input{tables/tab_capacity}\end{adjustbox}
-\end{table*}
+Capacities are derived from these inputs by a fixed rule, sized separately for the CTAS~1--3 and CTAS~4--5 streams, so that all three configurations of one acuity mix have the same total numbers of physicians per shift, treatment spaces and diagnostic servers. The base volume is \BaseVisits{} visits per day with a fixed diurnal arrival profile. Physicians are sized for an offered load of \PhysTargetMedium{} in each shift and stream; treatment spaces for an offered load of \SpaceSizing{} on the service-only holding time; diagnostic resources for \DiagTarget; and triage nurses for \TriageTarget{} at the busiest hour of the high load level. The arrival rate is then scaled so that the busiest physician pool has the target offered load. Because a dedicated fast track cannot borrow physicians from the Main area, a fast-track ED reaches a given load level with fewer visits than a pooled ED with the same staff. Table~\aref{tab:capacity} lists the resulting capacities and volumes, which range from \VisitsMin{} to \VisitsMax{} visits per day. Two further factors are varied one at a time on the medium-load types as a sensitivity analysis: boarding (mean decision-to-departure time of \BoardLowMean{} minutes in the core design and \BoardHighMean{} minutes in the high level) and diagnostic intensity (light, typical, heavy).
 
 \subsection{Patient Generator}
 
-Arrivals follow a non-homogeneous Poisson process with an hourly profile. Each patient receives a CTAS level from the acuity mix and an admission indicator from the CTAS-specific probability. The patient then draws a whole pathway rather than step-by-step transitions, which keeps the sequences realistic and avoids loops that do not occur in practice. Pathways come from a process-mining study of ED patient journeys that reported the \NPathways{} most frequent pathways, covering most visits \cite{Rismanchian2023_PatientJourney}. A pathway is drawn from those that end in the patient's disposition, with probability proportional to its published frequency multiplied by $\exp(\theta_l k)$, where $k$ is the number of diagnostic and consultation steps and $\theta_l$ a CTAS-specific tilt (from \TiltOne{} for CTAS~1 to \TiltFive{} for CTAS~5, and $0$ for CTAS~3). The diagnostic-intensity factor shifts every $\theta_l$ by $\pm$\DiagShiftHeavy. Activity durations are lognormal; their means and coefficients of variation are listed in the supplementary configuration file (for example, laboratory turnaround \DurLabMean{} minutes, CT \DurCTMean{} minutes, consultation \DurConsultMean{} minutes, reassessment \DurReassessMean{} minutes).
+Arrivals follow a non-homogeneous Poisson process with an hourly profile. Each patient receives a CTAS level from the acuity mix and an admission indicator from the CTAS-specific probability. The patient then draws a whole pathway rather than step-by-step transitions, which keeps the sequences realistic and avoids loops that do not occur in practice. Pathways come from a process-mining study of ED patient journeys that reported the \NPathways{} most frequent pathways, covering most visits \cite{Rismanchian2023_PatientJourney}. A pathway is drawn from those that end in the patient's disposition, with probability proportional to its published frequency multiplied by $\exp(\theta_l k)$, where $k$ is the number of diagnostic and consultation steps and $\theta_l$ a CTAS-specific tilt (from \TiltOne{} for CTAS~1 to \TiltFive{} for CTAS~5, and $0$ for CTAS~3). The diagnostic-intensity factor shifts every $\theta_l$ by $\pm$\DiagShiftHeavy. Activity durations are lognormal (Appendix~\aref{app:model}).
 
-Each patient carries a six-attribute code: A, CTAS level (1--5); B, service class (five equal-frequency classes of total treatment time, from 1, very long, to 5, very short); C, admission (1 admitted, 2 discharged); D, diagnostics (1 yes, 2 no); E, resource use (1 for three or more steps, 2 for two, 3 for one, 4 for none); F, consultation (1 yes, 2 no). Attribute A is observed at triage. Attributes B--F are predicted. For each attribute with reference confusion matrix $M_{\text{ref}}$, the predicted class is drawn from row $p$ of
+Each patient carries a six-attribute code (Appendix~\aref{app:coding}): A, CTAS level (1--5); B, service class (1 very long to 5 very short); C, admission (1 admitted, 2 discharged); D, diagnostics (1 yes, 2 no); E, resource use (1 three or more steps to 4 none); F, consultation (1 yes, 2 no). Attribute A is observed at triage. Attributes B--F are predicted. For each attribute with reference confusion matrix $M_{\text{ref}}$, the predicted class is drawn from row $p$ of
 \begin{equation}
 M(\alpha) = I + \alpha\,(M_{\text{ref}} - I),
 \label{eq:alpha}
@@ -83,7 +98,7 @@ A policy combines a queue rule and, in the two-area configurations, a routing ru
 \item \textbf{APQ}: accumulating priority, equal to the elapsed wait divided by the CTAS target time; the patient with the largest value is served \cite{StanfordTaylorZiedins2014_APQ}.
 \item \textbf{CTAS-SPT}: CTAS priority, then shortest predicted service (highest service class) within a level.
 \item \textbf{CTAS-PD}: CTAS priority, then predicted discharge first within a level.
-\item \textbf{SIM}: a similarity rule (defined below) with target code $1$-$5$-$2$-$2$-$4$-$2$ and weights (\SimWA, \SimWB, \SimWC, \SimWD, \SimWE, \SimWF), which expresses ``acuity first, then quick and simple patients''.
+\item \textbf{SIM}: a similarity rule (defined below) with target code $1$-$5$-$2$-$2$-$4$-$2$ and weights (\SimWA, \SimWB, \SimWC, \SimWD, \SimWE, \SimWF), which expresses ``acuity first, then quick and simple patients''; these values are a judgement-based setting of the kind used in practice \cite{GT-in-ED_HCMS2016}, and Section~\ref{sec:optimization} replaces them by optimized values.
 \item \textbf{SIM-AGE}: SIM plus an ageing term of \SimAging{} per elapsed CTAS target time, which lets long-waiting patients move up.
 \end{itemize}
 Three routing rules decide which patients go to the second area: \textbf{CTAS streaming} (C) sends CTAS~4--5 patients; \textbf{prediction streaming} (P) sends CTAS~3--5 patients with predicted discharge and predicted service class 4 or 5; \textbf{similarity routing} (S) sends a CTAS~3--5 patient to the area whose target code is more similar to the patient's code (Main target $1$-$1$-$1$-$1$-$1$-$1$, second-area target $5$-$5$-$2$-$2$-$4$-$2$; ties to Main). A policy is written as queue rule/routing rule, for example CTAS-SPT/C. The pooled configuration has \NQueueRules{} policies and the two-area configurations \NPoliciesTwoArea. Two rules apply to all policies. CTAS~1 patients are served first at every queue. Ties are broken explicitly: first by the time the patient joined the queue, then by patient identifier; similarity scores are rounded to $10^{-9}$ before comparison so that equal scores tie exactly. We refer to CTAS/C as the \emph{default} policy because it reflects common practice.
@@ -100,12 +115,9 @@ A similarity queue rule serves the patient with the largest $S$, with the safety
 
 \begin{proposition}[Linear index]
 \label{prop:linear}
-If every attribute with $w_k>0$ has its target at an end of its range ($q_k\in\{1,n_k\}$), then $S$ is affine in $p$ and the rule is a static linear priority index that is monotone in every weighted attribute. If some weighted attribute has an interior target, $S$ is not monotone in that attribute, and the rule cannot coincide with any rule that is monotone in it.
+If every attribute with $w_k>0$ has its target at an end of its range ($q_k\in\{1,n_k\}$), then $S$ is affine in $p$ and the rule is a static linear priority index that is monotone in every weighted attribute. If some weighted attribute has an interior target, $S$ is not monotone in that attribute, and the rule cannot coincide with any rule that is strictly monotone in it.
 \end{proposition}
 
-\begin{IEEEproof}
-With $q_k=1$, $|p_k-q_k|=p_k-1$; with $q_k=n_k$, $|p_k-q_k|=n_k-p_k$. In both cases the $k$-th term is affine in $p_k$. With $1<q_k<n_k$, the term increases in $p_k$ below $q_k$ and decreases above it.
-\end{IEEEproof}
 
 \begin{proposition}[Lexicographic dominance]
 \label{prop:lex}
@@ -117,9 +129,6 @@ Let all weighted targets lie at an end of their ranges and order the attributes 
 then the similarity rule orders patients lexicographically by $(|p_1-q_1|,\dots,|p_K-q_K|)$, with first-come-first-served ties. If (\ref{eq:lexcond}) fails for some $k$ and all code combinations can occur, there exist two patients whom the similarity rule does not order lexicographically.
 \end{proposition}
 
-\begin{IEEEproof}
-Let two codes first differ at attribute $k$, with $p$ closer to $q_k$ than $p'$. Term $k$ of $S(p)-S(p')$ is at least $w_k/R_k$, and each later term $j$ is at least $-w_j$, so $S(p)-S(p')\geq w_k/R_k-\sum_{j>k}w_j>0$. Codes that agree on all weighted attributes have equal (rounded) scores and are served first-come-first-served. Conversely, if $w_k/R_k\leq\sum_{j>k}w_j$, take $p$ one step closer to $q_k$ than $p'$ but at the far end of every later attribute, and $p'$ on target for every later attribute; then $S(p)-S(p')=w_k/R_k-\sum_{j>k}w_j\leq 0$, so $p$ is not served before $p'$ in general.
-\end{IEEEproof}
 
 Proposition~\ref{prop:lex} gives exact similarity representations of three classical rules. Weights $(1,0,\dots,0)$ give strict CTAS priority. Weights with $w_A/4>w_B$ and target $q_B=5$ give CTAS-SPT; we use $w_A=\RepSptWA$, $w_B=\RepSptWB$. Weights with $w_A/4>w_C$ and $q_C=2$ give CTAS-PD. The SIM weights do not satisfy (\ref{eq:lexcond}): $w_A/R_A=\SimWA/4$ is smaller than the sum of the other weights. Although SIM is often read as ``acuity first, then quick patients'', Proposition~\ref{prop:lex} shows that it is not CTAS-SPT; the experiments in Section~\ref{sec:results} measure how far it is from it.
 
@@ -132,8 +141,5 @@ S_{\text{second}}(p)-S_{\text{main}}(p)=\sum_{k}\sigma_k\frac{w_k}{R_k}\,(2p_k-n
 with $\sigma_k=\pm 1$, so routing is a linear threshold rule whose boundary passes through the centre of the code ranges. Weights on CTAS only reproduce CTAS streaming exactly, with CTAS~3 going to Main. Prediction streaming cannot be reproduced by any such weights.
 \end{proposition}
 
-\begin{IEEEproof}
-If the second-area target is $n_k$ and the Main target is $1$, the $k$-th term of the difference is $(w_k/R_k)(|p_k-1|-|p_k-n_k|)=(w_k/R_k)(2p_k-n_k-1)$; with the targets reversed the sign changes. With weights on CTAS only, the difference is positive if and only if $p_A>3$. For prediction streaming, a patient with predicted discharge ($p_C=2$) and service class $p_B=3$ must go to Main; the C term is $+w_C/R_C>0$ and the B term is zero, so the patient would be routed to the second area unless $w_C=0$, in which case discharge information is ignored.
-\end{IEEEproof}
 
-Two further remarks complete the picture. With all weights zero every score ties and the rule is FCFS. With all weights zero and an ageing term, SIM-AGE is APQ. The similarity representation with ageing therefore contains FCFS, CTAS, CTAS-SPT, CTAS-PD and APQ as special cases, but only under the stated conditions. We check the propositions by exhaustive enumeration of codes in the test suite and measure decision-level and outcome-level fidelity in the experiments.
+Proofs are given in Appendix~\aref{app:proofs}, which adds two results. Proposition~4 shows that prediction streaming becomes representable when the routing rule compares $S_{\text{second}}-S_{\text{main}}$ with an offset $b$ instead of zero: with weights on service class and admission only, the rule equals prediction streaming if and only if $w_B<4w_C$ and $\max(w_C,w_B-w_C)\le b<w_C+w_B/2$. Proposition~5 notes that with all weights zero every score ties and the rule is FCFS, and with all weights zero and an ageing term SIM-AGE is APQ. The similarity rules with ageing and offset therefore contain FCFS, CTAS, CTAS-SPT, CTAS-PD, APQ and all three routing rules as special cases, but only under the stated conditions. We check the propositions by exhaustive enumeration of codes in the test suite and measure fidelity in the experiments.

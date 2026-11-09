@@ -6,16 +6,20 @@ set -euo pipefail
 cd "$(dirname "$0")"
 PRETEX=""
 if ! kpsewhich IEEEtranN.bst > /dev/null; then PRETEX='\def\localbst{1}'; fi
-for f in main main_review; do
-  latexmk -pdf -interaction=nonstopmode -halt-on-error ${PRETEX:+-usepretex="$PRETEX"} "$f.tex" > /dev/null
-done
+LMK=(latexmk -pdf -interaction=nonstopmode -halt-on-error ${PRETEX:+-usepretex="$PRETEX"})
+# main_review and online_appendix cross-reference each other (xr-hyper): build, build, rebuild
+"${LMK[@]}" main.tex > /dev/null
+"${LMK[@]}" main_review.tex > /dev/null
+"${LMK[@]}" online_appendix.tex > /dev/null
+"${LMK[@]}" -g main_review.tex > /dev/null
+"${LMK[@]}" -g online_appendix.tex > /dev/null
 (cd supplement && latexmk -pdf -interaction=nonstopmode -halt-on-error STRESS_DES_checklist.tex > /dev/null)
 # number audit: no digits typed in the results text outside macros, tables and figures
 python3 ../experiments/scripts/audit_numbers.py
 STAMP=$(date -u +%Y%m%d)
 OUT=OPDNFA_TEM_LaTeX_${STAMP}.zip
 rm -f "$OUT"
-zip -q -r "$OUT" main.tex main_review.tex preamble.tex numbers.tex IEEEtran.cls ed_library.bib \
+zip -q -r "$OUT" main.tex main_review.tex online_appendix.tex online_appendix.pdf preamble.tex numbers.tex IEEEtran.cls ed_library.bib \
   sections tables figures outputs_provenance.json main.pdf main_review.pdf \
   supplement/STRESS_DES_checklist.tex supplement/STRESS_DES_checklist.pdf supplement/*.csv supplement/*.txt \
   README_package.txt

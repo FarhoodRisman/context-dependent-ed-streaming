@@ -1,0 +1,54 @@
+\section{Algorithms}
+\label{app:algorithms}
+
+This appendix gives the main algorithms in pseudo-code. Algorithm~\ref{alg:engine} is the event loop of the simulation, Algorithm~\ref{alg:queue} the queue used for every resource, and Algorithm~\ref{alg:fidelity} the decision-level fidelity measurement. The cross-entropy optimization is given in Algorithm~\mref{alg:cem} in Section~\mref{sec:optimization}.
+
+\begin{algorithm}[!ht]
+\caption{Event loop of the ED simulation}
+\label{alg:engine}
+\begin{algorithmic}[1]
+\REQUIRE patient list (arrival times, CTAS, pathway, durations, predicted codes), ED type, queue rule, routing rule
+\STATE schedule all arrivals and all shift changes; $n_{\text{obs}}\leftarrow$ number of patients arriving in the observation window
+\WHILE{$n_{\text{obs}}>0$}
+\STATE pop the earliest event $(t,\text{type},i)$; set the clock to $t$
+\IF{arrival} \STATE request a triage nurse
+\ELSIF{end of triage} \STATE release the nurse; schedule end of registration
+\ELSIF{end of registration} \STATE route $i$ to Main or the second area; request a treatment space
+\ELSIF{end of physician encounter} \STATE release the physician; release the chair if the area is vertical
+\STATE \textbf{if} initial assessment and pathway has steps \textbf{then} request the first step \textbf{else} decide
+\ELSIF{end of a pathway step} \STATE release the resource; request the next step, or a physician reassessment (and a chair in the vertical area)
+\ELSIF{end of discharge process or boarding} \STATE release the space; record departure; \textbf{if} $i$ observed \textbf{then} $n_{\text{obs}}\leftarrow n_{\text{obs}}-1$
+\ELSIF{shift change} \STATE set physician capacities (non-preemptive); dispatch physicians
+\ENDIF
+\ENDWHILE
+\STATE \textbf{procedure} decide($i$): record the decision; discharged: schedule discharge process; admitted: schedule boarding (a vertical patient first requests a Main bed)
+\STATE \textbf{procedure} request($r$, $i$): insert $i$ in the queue of $r$ (Algorithm~\ref{alg:queue}); dispatch $r$
+\STATE \textbf{procedure} dispatch($r$): \textbf{while} $r$ has a free server and a non-empty queue: pop the next patient and start the activity; a free Main space with an empty Main queue may take a waiting fast-track patient
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[!ht]
+\caption{Queue ordered by a queue rule}
+\label{alg:queue}
+\begin{algorithmic}[1]
+\REQUIRE rule with static key $\kappa(i)$ (order within a CTAS level) and dynamic key $\phi(\kappa,l,t)$ (comparison across levels at time $t$)
+\STATE \textbf{insert}($i$): push $(\kappa(i),i)$ on the heap $H_l$ of the patient's CTAS level $l$; every key ends in (time joined, patient id)
+\STATE \textbf{pop}($t$): \textbf{if} $H_1\neq\emptyset$ \textbf{then return} the head of $H_1$ \COMMENT{CTAS~1 first}
+\STATE \quad $l^*\leftarrow\arg\min_{l\in\{2,\dots,5\},H_l\neq\emptyset}\phi(\kappa(\text{head}(H_l)),l,t)$; \textbf{return} the head of $H_{l^*}$
+\STATE \textit{Examples:} CTAS: $\kappa=(t_0,i)$, $\phi=(l,\kappa)$. APQ: $\kappa=(t_0,i)$, $\phi=(-(t-t_0)/T_l,\kappa)$. Similarity with ageing $\gamma$ and bonus $\beta$: $\kappa=(-[S(p)+\beta\,\mathbb{1}_{\text{RA}}-\gamma t_0/T_l],t_0,i)$, $\phi=(\kappa_1-\gamma t/T_l,\dots)$
+\end{algorithmic}
+\end{algorithm}
+
+Within one CTAS level the static key gives the same order as the effective priority at any time, because the ageing rate $\gamma/T_l$ is common to the level; only the heads of the five levels need to be compared at a dispatch. The test suite checks that this gives the same choice as a full scan of the queue.
+
+\begin{algorithm}[!ht]
+\caption{Decision-level fidelity of a similarity rule $\sigma$ to a reference rule $\rho$}
+\label{alg:fidelity}
+\begin{algorithmic}[1]
+\STATE run the simulation with $\sigma$; at every dispatch from a queue $Q$ with $|Q|\ge2$:
+\STATE \quad $a\leftarrow$ patient chosen by $\sigma$; $b\leftarrow$ patient that $\rho$ would choose from the same $Q$ at the same time
+\STATE \quad $n\leftarrow n+1$; \textbf{if} $a=b$ \textbf{then} $m\leftarrow m+1$
+\STATE \quad at every fifth such dispatch with $|Q|\ge3$: record Kendall's $\tau$ between the orders of $Q$ under $\sigma$ and $\rho$
+\STATE agreement $=m/n$; also run $\rho$ alone on the same patients and compare the event logs and KPIs
+\end{algorithmic}
+\end{algorithm}

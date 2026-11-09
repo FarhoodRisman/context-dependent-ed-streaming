@@ -4,18 +4,11 @@
 The main experiment comprises \NRuns{} runs (\NEdTypes{} ED types, all policies, \Reps{} replications) with on average \PatientsPerRunMean{} patients per run in the observation window. All automated checks passed: every observed patient departed in every run, every overall mean lay within the range of its group means, and runs shared between experiments gave identical results.
 
 \subsection{Verification and Validation}
+\label{sec:res:vv}
 
 In the community, medium-load, pooled ED, the stage-to-stage transition frequencies recovered from the event log differ from those implied by the generator by at most \TransMaxDiffGen{}, and the pathway shares by at most \PathMaxDiffGen{}. The process logic therefore reproduces the intended pathways. Compared with the published pathway table, transition frequencies differ by at most \TransMaxDiffPub{}; the difference comes from the CTAS-specific tilt toward more diagnostic steps for higher-acuity patients, which the published table, pooled over all patients, does not show.
 
-Table~\ref{tab:face} reports time intervals for the same ED at the three load levels under the default policy. The 90th percentile of LOS for discharged CTAS~4 patients ranges from \FvLosCtasFourPNinetyLow{} hours at low load to \FvLosCtasFourPNinetyHigh{} hours at high load, which brackets the national Canadian value of \CihiNonAdmPNinety{} hours for less urgent discharged visits in 2025--2026 \cite{CIHI2026_NACRS}. The model is less congested than the average Canadian ED in other respects. Median door-to-physician times are below half an hour at all load levels, and the 90th percentile of LOS for admitted patients is about \FvLosAdmPNinetyHigh{} hours at high load, far below the national value of \CihiAdmPNinety{} hours, because boarding in the core design is short (mean \BoardLowMean{} minutes, at the lower end of reported provincial medians of \ProvBedWaitLow--\ProvBedWaitHigh{} hours \cite{Li2023_EDOvercrowdingCADTH}). The high boarding level in the sensitivity analysis moves the model toward the national situation. These comparisons support the use of the model for comparing policies; they do not make it a forecast of any particular ED.
-
-\begin{table}[!t]
-\centering
-\caption{Face validity: community ED, pooled configuration, default policy, \Reps{} replications per load level.}
-\label{tab:face}
-\footnotesize
-\begin{adjustbox}{max width=\linewidth}\input{tables/tab_face_validity}\end{adjustbox}
-\end{table}
+Time intervals for the same ED under the default policy (Table~\aref{tab:face}) are of the order of Canadian values. The 90th percentile of LOS for discharged CTAS~4 patients ranges from \FvLosCtasFourPNinetyLow{} hours at low load to \FvLosCtasFourPNinetyHigh{} hours at high load, which brackets the national Canadian value of \CihiNonAdmPNinety{} hours for less urgent discharged visits in 2025--2026 \cite{CIHI2026_NACRS}. The model is less congested than the average Canadian ED in other respects. Median door-to-physician times are below half an hour at all load levels, and the 90th percentile of LOS for admitted patients is about \FvLosAdmPNinetyHigh{} hours at high load, far below the national value of \CihiAdmPNinety{} hours, because boarding in the core design is short (mean \BoardLowMean{} minutes, at the lower end of reported provincial medians of \ProvBedWaitLow--\ProvBedWaitHigh{} hours \cite{Li2023_EDOvercrowdingCADTH}). These comparisons support the use of the model for comparing policies; they do not make it a forecast of any particular ED.
 
 \subsection{Policy Fidelity of Similarity Rules (RQ4)}
 
@@ -23,9 +16,9 @@ Table~\ref{tab:fidelity} reports fidelity in the three medium-load fast-track ED
 
 The two settings that violate condition (\ref{eq:lexcond}) behaved differently. With equal weights on CTAS and service class, the similarity rule chose the same patient as CTAS-SPT at \FidSimrepNearAgree\% of decisions (between \FidSimrepNearAgreeMin\% and \FidSimrepNearAgreeMax\% across the three acuity mixes; $\tau=\FidSimrepNearTau$). The SIM rule, which is often described as ``acuity first, then quick patients'', agreed with CTAS-SPT at only \FidSimAgree\% of decisions ($\tau=\FidSimTau$). Yet the outcomes of SIM and CTAS-SPT were close: mean LOS differed by \FidSimDLos\% and RATP by \FidSimDRatp{} on average. A comparison of average outcomes would therefore suggest that SIM ``is'' CTAS-SPT, while at the level of individual decisions the two rules disagree about half of the time. The disagreement matters for patients: under SIM a CTAS~3 patient with a short expected service can be seen before a CTAS~2 patient with a long one, which CTAS-SPT never allows.
 
-At the routing level, two-target similarity routing with weight on CTAS only reproduced CTAS streaming exactly. Similarity routing with the SIM weights agreed with prediction streaming on \FidStreamSimAgree\% of patients, and the outcomes differed strongly because the two rules send very different patients to the second area (Section~\ref{sec:res:mech}).
+At the routing level, two-target similarity routing with weight on CTAS only reproduced CTAS streaming exactly. Similarity routing with the SIM weights agreed with prediction streaming on \FidStreamSimAgree\% of patients, and the outcomes differed strongly because the two rules send very different patients to the second area (Section~\ref{sec:res:mech}). With weights on service class and admission only and an offset chosen by Proposition~4 (Appendix~\aref{app:proofs}), similarity routing agreed with prediction streaming on \PropFourAgree\% of all \NCodes{} codes, against \PropFourAgreeSimRoute\% without the offset.
 
-\begin{table*}[!t]
+\begin{table*}[!htbp]
 \centering
 \caption{Fidelity of similarity settings to reference rules (medium-load fast-track EDs, three acuity mixes, \FidReps{} replications each). Agreement: share of decisions (queue) or patients (routing) for which both rules make the same choice. $\Delta$ mean LOS: similarity setting minus reference rule, with 95\% confidence half-width.}
 \label{tab:fidelity}
@@ -37,22 +30,22 @@ At the routing level, two-target similarity routing with weight on CTAS only rep
 
 Fig.~\ref{fig:heatmap} shows, for each ED type, the policy with the lowest mean RATP and the policy with the lowest mean LOS, together with the number of policies that cannot be distinguished from the best at the 95\% level. The best policy is usually distinguishable from most others; the median number of policies tied with the best (including the best itself) is \MedianTiedRatp{} for RATP and \MedianTiedLosAllMean{} for mean LOS.
 
-\begin{figure*}[!t]
+\begin{figure*}[!htbp]
 \centering
-\includegraphics[width=0.92\textwidth]{figures/fig_best_policy_heatmap.pdf}
+\includegraphics[width=0.92\figtw]{figures/fig_best_policy_heatmap.pdf}
 \caption{Best policy by ED type for (a) RATP and (b) mean LOS. Cell colour shows the queue rule; the label gives the policy (queue rule/routing rule: C CTAS streaming, P prediction streaming, S similarity routing) and the number of policies whose paired difference from the best is not significant at the 95\% level (\Reps{} replications).}
 \label{fig:heatmap}
 \end{figure*}
 
 The best policy differs across ED types. For RATP, \NDistinctBestRatp{} different policies are best somewhere, built on \NDistinctBestQueueRatp{} different queue rules: SIM is best in \NBestRatpSim{} ED types, CTAS-SPT in \NBestRatpCtasSpt, CTAS in \NBestRatpCtas{} and CTAS-PD in \NBestRatpCtasPd. The pattern follows the acuity mix. In tertiary EDs, SIM is best in every configuration and load level; in urgent-care-like EDs, rules that keep strict CTAS order (CTAS and CTAS-SPT) are best in every configuration and load level except the medium- and low-load fast track; community EDs lie in between, with the configuration deciding. For mean LOS, SIM is best in \NBestLosAllMeanSim{} ED types and FCFS in \NBestLosAllMeanFcfs, mostly at low load and in split flow, where queues are short and the order matters little. The default policy is the best policy for RATP in \DefaultIsBestRatp{} of the \NEdTypes{} ED types and for mean LOS in \DefaultIsBestLosAllMean.
 
-In the two-area configurations the routing rule matters at least as much as the queue rule. Similarity routing is part of the best policy for RATP in \NBestRouteRatpStreamSim{} of the \NTwoAreaTypes{} two-area ED types and for mean LOS in \NBestRouteLosAllMeanStreamSim; prediction streaming is never best. Relative to the default policy, the best policy lowers mean RATP by \BestVsDefaultRatpMean\% on average (up to \BestVsDefaultRatpMax\%), with a significant difference in \BestVsDefaultRatpNSig{} of \NEdTypes{} ED types, and mean LOS by \BestVsDefaultLosAllMeanMean\% on average (up to \BestVsDefaultLosAllMeanMax\%; significant in \BestVsDefaultLosAllMeanNSig{} ED types). Table~\ref{tab:best} in the Appendix lists the values for every ED type.
+In the two-area configurations the routing rule matters at least as much as the queue rule. Similarity routing is part of the best policy for RATP in \NBestRouteRatpStreamSim{} of the \NTwoAreaTypes{} two-area ED types and for mean LOS in \NBestRouteLosAllMeanStreamSim; prediction streaming is never best. Relative to the default policy, the best policy lowers mean RATP by \BestVsDefaultRatpMean\% on average (up to \BestVsDefaultRatpMax\%), with a significant difference in \BestVsDefaultRatpNSig{} of \NEdTypes{} ED types, and mean LOS by \BestVsDefaultLosAllMeanMean\% on average (up to \BestVsDefaultLosAllMeanMax\%; significant in \BestVsDefaultLosAllMeanNSig{} ED types). Table~\aref{tab:best} in the Appendix lists the values for every ED type.
 
 \subsection{Cost of a Single Policy for All ED Types (RQ2)}
 
 Table~\ref{tab:regret} reports, for each measure, the single policy with the smallest mean regret across the \NEdTypes{} ED types, and the regret of the default policy. Fig.~\ref{fig:regret} shows the regret per ED type for the two primary measures.
 
-\begin{table*}[!t]
+\begin{table*}[!htbp]
 \centering
 \caption{Regret of one-size-fits-all policies across the \NEdTypes{} core ED types: mean and maximum relative regret, and number of ED types with regret above 10\%. The best single policy is chosen separately for each measure.}
 \label{tab:regret}
@@ -60,9 +53,9 @@ Table~\ref{tab:regret} reports, for each measure, the single policy with the sma
 \begin{adjustbox}{max width=\linewidth}\input{tables/tab_regret}\end{adjustbox}
 \end{table*}
 
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\columnwidth]{figures/fig_regret.pdf}
+\includegraphics[width=\figcw]{figures/fig_regret.pdf}
 \caption{Regret per ED type of the default policy and of the best single policy, for RATP (top) and mean LOS (bottom). ED types are grouped by configuration; labels give acuity mix and load.}
 \label{fig:regret}
 \end{figure}
@@ -80,29 +73,7 @@ The advantage of similarity routing comes from how many and which patients it se
 
 Prediction streaming, as defined here, sends only patients with a predicted quick discharge to the second area and keeps every other patient, including most CTAS~4--5 patients who need tests, in the Main area. When capacity is split by acuity, as it is in our sizing and in many EDs, this overloads the Main area. In \NOverloadedTypes{} ED types (\OverloadedTypesList) prediction streaming kept Main-area utilization at or above \OverloadThreshold, so that queues grew throughout the run; we report these cases as overloaded rather than interpret their averages. Prediction streaming had the highest mean LOS of all policies in \NWorstLosPredStream{} of the \NTwoAreaTypes{} two-area ED types. A routing rule therefore has to match the way capacity is split between areas; a rule that is reasonable on clinical grounds can fail on capacity grounds.
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{figures/fig_pareto.pdf}
-\caption{Mean LOS against RATP for all policies in the community ED at high load. Grey line: policies not dominated on both measures (labelled). Overloaded policies (Main-area utilization $\geq$ \OverloadThreshold) are omitted.}
-\label{fig:pareto}
-\end{figure}
-
-Fig.~\ref{fig:pareto} shows the trade-off between RATP and mean LOS in the community ED at high load. In the pooled and fast-track configurations a single policy (SIM or SIM/S) is best on both measures; in split flow the non-dominated set contains several policies, and the choice depends on the weight given to access and flow. Fig.~\ref{fig:tails} and Table~\ref{tab:kpis} show the price of acuity-based ordering in the tails. In the pooled community ED at high load, the 95th percentile of door-to-physician time of CTAS~5 patients is \TailPNinetyFiveFcfsCtasFive{} hours under FCFS, \TailPNinetyFiveApqCtasFive{} hours under APQ, \TailPNinetyFiveSimCtasFive{} hours under SIM and \TailPNinetyFiveCtasCtasFive{} hours under CTAS. FCFS, in turn, lets the 95th percentile for CTAS~2 patients rise to \TailPNinetyFiveFcfsCtasTwo{} hours, against \TailPNinetyFiveCtasCtasTwo{} hours under CTAS. The ageing term of SIM-AGE shortens the CTAS~2 tail relative to SIM (\TailPNinetyFiveSimAgeCtasTwo{} against \TailPNinetyFiveSimCtasTwo{} hours) but not the CTAS~5 tail.
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=0.95\columnwidth]{figures/fig_tails.pdf}
-\caption{95th percentile of door-to-physician time by CTAS level and queue rule (community ED, high load, pooled; log scale).}
-\label{fig:tails}
-\end{figure}
-
-\begin{table*}[!t]
-\centering
-\caption{Performance by queue rule in the community ED at high load (pooled; \Reps{} replications). Second line of each measure: paired difference from CTAS; bold if the 95\% confidence interval excludes zero.}
-\label{tab:kpis}
-\footnotesize
-\begin{adjustbox}{max width=\linewidth}\input{tables/tab_kpis_community_high_pooled}\end{adjustbox}
-\end{table*}
+In the community ED at high load, a single policy (SIM or SIM/S) is best on both RATP and mean LOS in the pooled and fast-track configurations, whereas in split flow several policies are not dominated (Fig.~\aref{fig:pareto}). Acuity-based ordering has a price in the tails: in the pooled community ED at high load, the 95th percentile of door-to-physician time of CTAS~5 patients is \TailPNinetyFiveCtasCtasFive{} hours under CTAS against \TailPNinetyFiveFcfsCtasFive{} hours under FCFS, while FCFS lets the 95th percentile for CTAS~2 patients rise to \TailPNinetyFiveFcfsCtasTwo{} hours, against \TailPNinetyFiveCtasCtasTwo{} hours under CTAS (Table~\aref{tab:kpis}, Fig.~\aref{fig:tails}).
 
 \input{sections/results_alpha_sens}
 
@@ -110,10 +81,12 @@ Fig.~\ref{fig:pareto} shows the trade-off between RATP and mean LOS in the commu
 
 Table~\ref{tab:guide} condenses the results into a guide for ED managers. For each acuity mix and configuration it gives the policy with the smallest mean regret over the three load levels, separately for access (RATP), flow (mean LOS) and their average, with the largest regret over the load levels. Within an acuity mix and configuration, a single policy is within \GuideMaxRegretRatp\% of the best RATP and within \GuideMaxRegretLos\% of the best mean LOS at every load level, so the load level matters less for the choice than the acuity mix and the configuration. A classification tree fitted to the best queue rule by ED type confirms this ordering: it splits first on acuity mix and then on configuration, and with \TreeRatpLeaves{} leaves it reproduces the best queue rule for RATP in \TreeRatpAcc\% of the ED types.
 
-\begin{table*}[!t]
+\begin{table*}[!htbp]
 \centering
 \caption{Decision guide: recommended policy by acuity mix and configuration (smallest mean regret over the three load levels) and the largest regret over the load levels. ``Balanced'' uses the average of the RATP and mean-LOS regrets.}
 \label{tab:guide}
 \footnotesize
 \begin{adjustbox}{max width=\linewidth}\input{tables/tab_decision_guide}\end{adjustbox}
 \end{table*}
+
+\input{sections/results_opt}

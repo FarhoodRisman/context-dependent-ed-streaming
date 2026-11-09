@@ -1,8 +1,11 @@
-% Anonymised review version for IEEE TEM (double-blind; single column; double spaced; 12 pt).
+% Anonymised review version for IEEE TEM (double-blind; single column; 12 pt; double spaced via IEEEtran draftclsnofoot).
 \documentclass[12pt,onecolumn,draftclsnofoot,journal]{IEEEtran}
 \input{preamble}
 \usepackage{setspace}
-\doublespacing
+\externaldocument[A-]{online_appendix}
+\renewcommand{\aref}[1]{\ref{A-#1}}
+\renewcommand{\figscale}{0.72}
+% IEEEtran draftcls sets the double-spaced manuscript format (baselinestretch 1.5)
 
 \begin{document}
 

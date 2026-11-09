@@ -1,22 +1,14 @@
 \subsection{Value of Prediction Accuracy (RQ3)}
+\label{sec:res:vop}
 
-Fig.~\ref{fig:alpha} shows RATP as a function of the prediction error level $\alpha$ for the medium-load pooled and fast-track EDs, and Table~\ref{tab:vop} compares, for each of the \NMediumTypes{} medium-load ED types, the best policy that uses predictions with the best policy that does not (FCFS, CTAS or APQ, with CTAS streaming in two-area EDs).
+Fig.~\ref{fig:alpha} shows RATP as a function of the prediction error level $\alpha$ for the medium-load pooled and fast-track EDs, and Table~\aref{tab:vop} compares, for each of the \NMediumTypes{} medium-load ED types, the best policy that uses predictions with the best policy that does not (FCFS, CTAS or APQ, with CTAS streaming in two-area EDs).
 
-\begin{figure*}[!t]
+\begin{figure*}[!htbp]
 \centering
-\includegraphics[width=0.9\textwidth]{figures/fig_alpha.pdf}
+\includegraphics[width=0.9\figtw]{figures/fig_alpha.pdf}
 \caption{RATP against the prediction error level $\alpha$ ($\alpha=0$: perfect information; $\alpha=1$: reference accuracy) for medium-load pooled EDs (top, queue rules) and fast-track EDs (bottom, routing rules). Dashed lines: policies that do not use predictions. \RepsSecondary{} replications per point.}
 \label{fig:alpha}
 \end{figure*}
-
-\begin{table*}[!t]
-\centering
-\caption{Gain of the best prediction-based policy over the best policy without predictions (medium load), with perfect information ($\alpha=0$) and reference accuracy ($\alpha=1$), and the largest $\alpha$ tested at which it is still better ($\geq$: better at every $\alpha$ tested).}
-\label{tab:vop}
-\footnotesize
-\setlength{\tabcolsep}{2.5pt}
-\begin{adjustbox}{max width=\linewidth}\input{tables/tab_value_of_prediction}\end{adjustbox}
-\end{table*}
 
 At the reference accuracy the best prediction-based policy had a lower RATP than the best policy without predictions in \VopNBetterAtOneRatp{} of the \NMediumTypes{} ED types and a lower mean LOS in \VopNBetterAtOneLosAllMean. The RATP gain ranged from \VopGainOneMinRatp\% to \VopGainOneMaxRatp\%; it was largest in fast-track EDs and smallest in the pooled urgent-care-like ED, where strict CTAS order is already close to the best. LOS gains were small, at most \VopGainOneMaxLosAllMean\%.
 

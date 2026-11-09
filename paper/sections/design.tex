@@ -26,7 +26,7 @@ where $W$ is door-to-physician time and $T_l$ the target. RATP weights the share
 \item \textbf{E9, out-of-sample ED types}: \NOosTypes{} ED types drawn by Latin hypercube sampling \cite{McKay1979_LHS}, ten per configuration, with the acuity mix interpolated between the three mixes and load, boarding time and diagnostic profile varied continuously (Appendix~\aref{app:model}); they were not used to build the guide or to optimize any rule. All fixed policies are run, together with the optimized rules of the nearest core ED type, \NOosReps{} replications.
 \end{itemize}
 
-Two further analyses use the E2 output. A bootstrap over replications (\BootB{} resamples) estimates, for each ED type, the probability that the policy with the lowest mean remains the best, which shows how firmly each recommendation is identified. The best policies are also recomputed with other acuity weights in RATP (Appendix~\aref{app:res:altw}).
+Two further analyses use the E2 output. A bootstrap over replications (\BootB{} resamples) estimates, for each ED type, the probability that the policy with the lowest mean remains the best, which shows how firmly each best policy is identified. The best policies are also recomputed with other acuity weights in RATP (Appendix~\aref{app:res:altw}).
 
 In E3 the engine runs the similarity index and records, at every dispatch, whether the reference rule would have chosen the same patient; the reference rule is then run on the same patient list and the event logs are compared (Appendix~\aref{app:model}).
 

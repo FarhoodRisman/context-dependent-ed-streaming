@@ -109,7 +109,7 @@ Three routing rules decide which patients go to the second area: \textbf{CTAS st
 \subsection{The Similarity-Based Priority Index and Its Fidelity}
 \label{sec:propositions}
 
-A priority index assigns each waiting patient a number computed from the patient's own attributes and serves the patient with the largest number. The similarity-based priority index used here needs only the coded triage attributes, a weighted sum and a sort, and its weights can be read directly, so it can be configured in an ED information system without optimization at run time. Let $p=(p_1,\dots,p_K)$ be a patient code with $p_k\in\{1,\dots,n_k\}$, $R_k=n_k-1$ the range of attribute $k$, $q$ a target code and $w\geq 0$ a weight vector. The weighted similarity of Offodile \cite{OFFODILE1990} is
+A priority index assigns each waiting patient a number computed from the patient's own attributes and serves the patient with the largest number. The similarity-based priority index used here needs only the coded triage attributes, a weighted sum and a sort, and its weights can be read directly, so it could be configured in an ED information system without optimization at run time. Let $p=(p_1,\dots,p_K)$ be a patient code with $p_k\in\{1,\dots,n_k\}$, $R_k=n_k-1$ the range of attribute $k$, $q$ a target code and $w\geq 0$ a weight vector. The weighted similarity of Offodile \cite{OFFODILE1990} is
 \begin{equation}
 S(p) = \sum_{k=1}^{K} w_k\left(1-\frac{|p_k-q_k|}{R_k}\right).
 \label{eq:sim}

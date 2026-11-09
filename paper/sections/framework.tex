@@ -3,29 +3,32 @@
 
 \subsection{Overview}
 
-Fig.~\ref{fig:framework} shows the structure of the study. The framework has three parts: a generator that creates synthetic patients for a given ED type, a discrete-event model of the ED process, and a set of streaming policies, which are either fixed rules or similarity rules whose parameters are optimized by simulation (Section~\ref{sec:optimization}). For each ED type and replication, the generator creates one patient list containing arrival times, triage levels, dispositions, pathways, all activity durations and the predicted attributes at every prediction-error level. Every policy is then run on the same list, so policy comparisons use common random numbers by construction. All model inputs are entered once in configuration files with their sources; the full specification and code are available (see the Data and Code Availability statement).
+Fig.~\ref{fig:framework} shows the structure of the study. For each ED type and replication, the generator creates one patient list containing arrival times, triage levels, dispositions, pathways, all activity durations and the predicted attributes at every prediction-error level. Every policy is then run on the same list, so policy comparisons use common random numbers by construction. All model inputs are entered once in configuration files with their sources; the full specification and code are available (see the Data and Code Availability statement).
 
 \begin{figure*}[!htbp]
 \centering
-\begin{tikzpicture}[node distance=3mm and 4mm, >=Stealth,
-  blk/.style={draw, rounded corners=2pt, align=left, font=\scriptsize, fill=black!3, text width=3.55cm, minimum height=1.55cm},
-  hd/.style={font=\scriptsize\bfseries, align=center}]
-\node[blk] (in) {\textbf{Inputs}\\ published case mix and admission rates; published pathways; CTAS targets; stated assumptions (one configuration file, each value with its source)};
-\node[blk, right=of in] (ed) {\textbf{ED types}\\ \NEdTypes{} core types: acuity $\times$ load $\times$ layout; sensitivity (boarding, diagnostics); perturbed inputs; \NOosTypes{} out-of-sample types};
-\node[blk, right=of ed] (gen) {\textbf{Patient generator}\\ arrivals, CTAS, disposition, whole pathway, durations; true code and predicted codes $M(\alpha)$; one list per replication (common random numbers)};
-\node[blk, right=of gen] (des) {\textbf{Discrete-event model}\\ triage, areas, spaces, physician shifts, diagnostics, consults, boarding; event log};
-\node[blk, below=7mm of in] (pol) {\textbf{Policies}\\ \NQueueRules{} queue rules $\times$ 3 routing rules; similarity rules with weights, targets, ageing, reassessment bonus, routing offset};
-\node[blk, right=of pol] (th) {\textbf{Theory}\\ Propositions 1--5: when a similarity rule equals a classical rule; decision-level fidelity};
-\node[blk, right=of th] (opt) {\textbf{Simulation optimization}\\ cross-entropy search per ED type and objective; training, validation and test replications; transfer across types};
-\node[blk, right=of opt] (kpi) {\textbf{Analysis}\\ KPIs from the event log; best policy and ties; regret; value of prediction; robustness; decision guide};
-\draw[->] (in) -- (ed); \draw[->] (ed) -- (gen); \draw[->] (gen) -- (des);
-\draw[->] (pol) -- (th); \draw[->] (th) -- (opt);
-\draw[->] (pol.north east) -- (des.south west);
-\draw[->] (opt.north) to[out=90, in=-120] (des.south);
-\draw[->] (des.south east) to[out=-60, in=60] (kpi.north east);
-\draw[->] (kpi.west) -- (opt.east);
+\begin{adjustbox}{max width=\textwidth}
+\begin{tikzpicture}[node distance=7mm, >=Stealth,
+  blk/.style={draw, rounded corners=3pt, align=left, font=\footnotesize, fill=black!3, text width=4.9cm, minimum height=2.4cm, inner sep=4pt}]
+\node[blk] (in) {\textbf{Inputs}\\[3pt]
+  $\bullet$ ED types: acuity mix, load, configuration\\[1pt]
+  $\bullet$ Published case mix and patient pathways\\[1pt]
+  $\bullet$ Queue rules and routing rules};
+\node[blk, right=of in] (sim) {\textbf{Simulation model}\\[3pt]
+  $\bullet$ Patient generator (true and\\\phantom{$\bullet$} predicted attributes)\\[1pt]
+  $\bullet$ Discrete-event model of the ED\\[1pt]
+  $\bullet$ Common random numbers};
+\node[blk, right=of sim] (an) {\textbf{Analyses}\\[3pt]
+  $\bullet$ Policy fit and regret (RQ1)\\[1pt]
+  $\bullet$ Value of prediction accuracy (RQ2)\\[1pt]
+  $\bullet$ Scoring-rule fidelity and tuning (RQ3)\\[1pt]
+  $\bullet$ Robustness checks};
+\draw[->, thick] (in) -- (sim);
+\draw[->, thick] (sim) -- (an);
+\draw[->] (an.south) to[out=-110, in=-70] node[below, font=\scriptsize]{tuning of rule parameters} (sim.south);
 \end{tikzpicture}
-\caption{Structure of the study. Arrows show the flow of inputs, policies and results; the optimization calls the simulation model repeatedly and is evaluated on replications not used in the search.}
+\end{adjustbox}
+\caption{Structure of the study. The lower arrow indicates that the tuning of scoring rules evaluates candidate rules by repeated simulation.}
 \label{fig:framework}
 \end{figure*}
 
@@ -49,7 +52,7 @@ Fig.~\ref{fig:framework} shows the structure of the study. The framework has thr
 \node[box, left=of dd, yshift=-5mm] (dep) {Departure};
 \draw[->] (arr) -- (tr); \draw[->] (tr) -- (rg); \draw[->] (rg) -- (rt); \draw[->] (rt) -- (sp); \draw[->] (sp) -- (as);
 \draw[->] (as) -- node[right, font=\scriptsize]{if steps} (dx); \draw[->] (dx) -- (ra); \draw[->] (ra) -- (dec);
-\draw[->] (as.south west) to[out=-150, in=30] node[above, font=\scriptsize, pos=0.35]{no steps} (dec.north east);
+\draw[->] (as.south west) to[out=-150, in=30] node[below right, font=\scriptsize, pos=0.25]{no steps} (dec.north east);
 \draw[->] (dec) -- (dd); \draw[->] (dec) -- (bd); \draw[->] (dd) -- (dep); \draw[->] (bd) -- (dep);
 \node[font=\scriptsize, align=left, below=2mm of bd.south east, anchor=north west, xshift=-2mm] {Every resource (blue) has its own queue, ordered by the policy's queue rule;\\CTAS~1 patients are always served first.};
 \end{tikzpicture}
@@ -65,7 +68,7 @@ The model has three configurations. In the \emph{pooled} configuration all patie
 
 \subsection{ED Types}
 
-ED types are defined by three factors in a full factorial design. The \emph{acuity mix} has three levels (Table~\ref{tab:parameters}): a community mix equal to the pooled CTAS distribution of the 16 highest-volume EDs in Alberta, and tertiary and urgent-care-like mixes placed inside the between-site ranges reported for the same EDs, near their high- and low-acuity ends \cite{Holroyd2016_EDCaseMix}. Admission probabilities by CTAS level are the midpoints of the reported between-site ranges. The \emph{load} has three levels: the offered load of the busiest physician pool is \LoadLow, \LoadMedium{} or \LoadHigh. The \emph{configuration} is pooled, fast track or split flow.
+ED types are defined by three factors in a full factorial design. The \emph{acuity mix} has three levels (Table~\ref{tab:parameters}): a community mix equal to the pooled CTAS distribution of the 16 highest-volume EDs in Alberta, and tertiary and urgent-care-like mixes placed inside the between-site ranges reported for the same EDs, near their high- and low-acuity ends \cite{Holroyd2016_EDCaseMix}. These mixes are consistent with full-length studies of Canadian EDs: in three urban adult EDs in Calgary, one of them a regional cardiac, stroke and trauma centre, 27\%, 49\%, 19\% and 5\% of the visits triaged to CTAS levels 2--5 were at levels 2, 3, 4 and 5, respectively \cite{McRae2022_CrowdingRevisits}, a distribution between our community and tertiary mixes. Admission probabilities by CTAS level are the midpoints of the reported between-site ranges. The \emph{load} has three levels: the offered load of the busiest physician pool is \LoadLow, \LoadMedium{} or \LoadHigh. The \emph{configuration} is pooled, fast track or split flow.
 
 \begin{table}[!htbp]
 \centering

@@ -1,4 +1,4 @@
-One Policy Does Not Fit All: Matching Patient Streaming Policies to Emergency Department Types
+Context-Dependent Patient Streaming in Emergency Departments: Simulation-Based Evaluation and Optimization of Prioritization and Routing Policies
 LaTeX package (IEEE Transactions on Engineering Management)
 
 Files
